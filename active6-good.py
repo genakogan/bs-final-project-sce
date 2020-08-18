@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-
 from skimage import data
 from skimage import color
 from skimage import morphology
