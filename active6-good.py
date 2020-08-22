@@ -3,7 +3,6 @@ from skimage import data
 from skimage import color
 from skimage import morphology
 from skimage import segmentation
-
 # Input data
 img = plt.imread('crop.jpg')
 img[10][10] = 0
