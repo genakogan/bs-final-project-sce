@@ -6,7 +6,7 @@ from skimage import morphology
 from skimage import segmentation
 
 # Input data
-img = plt.imread('crop.jpg')
+img = plt.imread('crop3.jpg')
 
 # Compute a mask for the bone
 lum = color.rgb2gray(img) # Convert the image to graycicle
