@@ -12,8 +12,8 @@ img = plt.imread('crop3.jpg')
 lum = color.rgb2gray(img) # Convert the image to graycicle
 mask = morphology.remove_small_holes(
     morphology.remove_small_objects(
-        lum < 0.5156, 500),
-    500) # Compute the mask by deletion of small holes
+        lum < 0.6, 500),
+    1000) # Compute the mask by deletion of small holes
 
 # Different version
 """
@@ -25,6 +25,7 @@ mask = morphology.remove_small_holes(
 
 
 mask = morphology.opening(mask, morphology.disk(1)) # Remove some of foreground - Erosion
+mask = morphology.closing(mask, morphology.disk(3)) # Remove some holes in the object - Dilation
 
 # SLIC result
 slic = segmentation.slic(img, n_segments=1, start_label=1)
@@ -43,11 +44,11 @@ ax2.imshow(mask, cmap="gray")
 ax2.set_title("Mask of the image")
 
 ax3.imshow(segmentation.mark_boundaries(img, slic))
-ax3.contour(mask, colors='red', linewidths=1)
+ax3.contour(mask, colors='red', linewidths=0.5)
 ax3.set_title("SLIC Algorithm")
 
 ax4.imshow(segmentation.mark_boundaries(img, m_slic))
-ax4.contour(mask, colors='red', linewidths=1)
+ax4.contour(mask, colors='red', linewidths=0.5)
 ax4.set_title("maskSLIC Algorithm")
 
 # Don't show the axis for images - turn them off
