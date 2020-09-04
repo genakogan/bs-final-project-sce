@@ -64,7 +64,6 @@ class Root(Tk):
             self.label3.grid(column = col + 1, row = row)
             self.label3.configure(text = image)
             row = row + 1
-            #label2.bind(self.label2.image, on_image_click)
 
 root = Root()
 root.mainloop()
