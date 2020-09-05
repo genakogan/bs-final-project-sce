@@ -20,7 +20,6 @@ def button_clear():
 
 def button_add():
 	first_number = e.get()
-    help(first_number)
 	global f_num
 	global math
 	math = "addition"
