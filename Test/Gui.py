@@ -23,6 +23,7 @@ class Root(Tk):
 
         self.button()
 
+
     def button(self):
         self.button = ttk.Button(self.labelFrame, text = "Browse A File",command = self.fileDialog)
         self.button.grid(column = 1, row = 1)
