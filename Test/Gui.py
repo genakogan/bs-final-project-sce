@@ -19,10 +19,8 @@ class Root(Tk):
         self.minsize(640, 400)
 
         self.labelFrame = ttk.LabelFrame(self, text = "Open File")
-        self.labelFrame.grid(column = 0, row = 1, padx = 20, pady = 20)
-
-        self.button()
-
+        self.labelFrame.grid(column = 0, row = 0, padx = 20, pady = 20)
+        self.labelFrame = self.button()
 
     def button(self):
         self.button = ttk.Button(self.labelFrame, text = "Browse A File",command = self.fileDialog)
