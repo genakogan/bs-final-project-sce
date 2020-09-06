@@ -52,18 +52,21 @@ class Root(Tk):
         col = 0
         
         # Open all the images in the directory
-        for image in onlyfiles:        
-            img = Image.open(self.path + "/"+ image)
-            img = img.resize((100, 100), Image.ANTIALIAS)
-            photo = ImageTk.PhotoImage(img)
-            self.label2 = Label(image=photo)
-            self.label2.image = photo 
-            self.label2.grid(column=col, row=row)
-            self.label2.configure(text = image)
-            self.label3 = Label()
-            self.label3.grid(column = col + 1, row = row)
-            self.label3.configure(text = image)
-            row = row + 1
+        for image in onlyfiles:    
+            try:
+                img = Image.open(self.path + "/"+ image)
+                img = img.resize((100, 100), Image.ANTIALIAS)
+                photo = ImageTk.PhotoImage(img)
+                self.label2 = Label(image=photo)
+                self.label2.image = photo 
+                self.label2.grid(column=col, row=row)
+                self.label2.configure(text = image)
+                self.label3 = Label()
+                self.label3.grid(column = col + 1, row = row)
+                self.label3.configure(text = image)
+                row = row + 1
+            except IOError:
+                print("Not an image!")
 
 root = Root()
 root.mainloop()
