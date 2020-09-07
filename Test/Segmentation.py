@@ -1,87 +1,71 @@
 # -*- coding: utf-8 -*-
+"""
+Created on Thu Sep  3 17:29:23 2020
+@author: Aviel-PC
+"""
 
-import matplotlib.pyplot as plt
-import numpy as np
+from tkinter import *
+from tkinter import ttk
+from tkinter import filedialog
+from PIL import Image, ImageTk
+from os import listdir
+from os.path import isfile, join
 
-from skimage import data
-from skimage import color
-from skimage import morphology
-from skimage import segmentation
+class Root(Tk):
+    def __init__(self):
+        super(Root, self).__init__()
+        self.title("Python Tkinter Dialog Widget")
+        self.minsize(640, 400)
 
-# The function configures an image before segmentation
-def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 1000):
-    # The function gets numpy array for image and mask and returns the cropped image by the mask
-    def cropShape(npImg, npMask):
+        self.labelFrame = ttk.LabelFrame(self, text = "Open File")
+        self.labelFrame.grid(column = 0, row = 1, padx = 20, pady = 20)
+
+        self.button()
+
+
+    def button(self):
+        self.button = ttk.Button(self.labelFrame, text = "Browse A File",command = self.fileDialog)
+        self.button.grid(column = 1, row = 1)
+
     
-        # Copy the image to new numpy array of pixels
-        npCropImg = np.copy(npImg)
-        
-        # Initialize the indexes for loop
-        nIndxRow = 0
-        nIndxCol = 0
-        
-        # Run over the rows of the image
-        for nIndxRow in range(0, npImg.shape[0]):
-            # Run over the columns of the image
-            for nIndxCol in range(0, npImg.shape[1]):
-                # If the current pixel is set to False in the mask then the pixel is not part of the bone
-                if npMask[nIndxRow][nIndxCol] == False:
-                    # Reset the pixel if it is not part of the bone
-                    npCropImg[nIndxRow][nIndxCol] = [0,0,0]
-        
-        return (npCropImg)
-    
-    # The function Performs the segmentation
-    def perform_segmentation():
-        # Open the image as numpy array
-        img = plt.imread(path)
-        
-        # Compute a mask for the bone
-        lum = color.rgb2gray(img) # Convert the image to graycicle
-        mask = morphology.remove_small_holes(
-            morphology.remove_small_objects(
-                lum > threshold, min_size),
-            area_threshold) # Compute the mask by deletion of small holes
-        
-        # Remove some of foreground - Erosion
-        mask = morphology.opening(mask, morphology.disk(1))
-        
-        # Remove some holes in the object - Dilation
-        mask = morphology.closing(mask, morphology.disk(3))
-        
-        # SLIC result
-        slic = segmentation.slic(img, n_segments=1, start_label=1)
-        
-        # maskSLIC result
-        m_slic = segmentation.slic(img, n_segments=1, mask=mask, start_label=1)
-        
-        # Display result
-        fig, ax_arr = plt.subplots(2, 2, sharex=True, sharey=True, figsize=(10, 10))
-        ax1, ax2, ax3, ax4 = ax_arr.ravel()
-        
-        ax1.imshow(cropShape(img,mask))
-        ax1.set_title("Original image")
-        
-        ax2.imshow(mask, cmap="gray")
-        ax2.set_title("Mask of the image")
-        
-        ax3.imshow(segmentation.mark_boundaries(img, slic))
-        ax3.contour(mask, colors='red', linewidths=0.5)
-        ax3.set_title("SLIC Algorithm")
-        
-        ax4.imshow(segmentation.mark_boundaries(img, m_slic))
-        ax4.contour(mask, colors='red', linewidths=0.5)
-        ax4.set_title("maskSLIC Algorithm")
-        
-        # Don't show the axis for images - turn them off
-        for ax in ax_arr.ravel():
-            ax.set_axis_off()
-        
-        # Set output to be tight in order to show larger images
-        plt.tight_layout()
-        plt.show()
-    return perform_segmentation
+    def on_image_click(event=None):
+        # `command=` calls function without argument
+        # `bind` calls function with one argument
+        print("image clicked")
 
-images = [imageConfigSegment("crop2.jpg"),imageConfigSegment("crop3.jpg"),imageConfigSegment("crop4.jpg",0.7)]
-for image in images:
-    image()
+    def fileDialog(self):
+  
+        # Browse for directory of images
+        self.path = filedialog.askdirectory()
+        
+        # Print label with directory location under the button
+        self.label = ttk.Label(self.labelFrame, text = "")
+        self.label.grid(column = 1, row = 2)
+        self.label.configure(text = self.path)
+        
+        # Load all files in directory to array - without directories
+        onlyfiles = [f for f in listdir(self.path) if isfile(join(self.path, f))]
+        
+        # set location of the image preview
+        row = 4
+        col = 0
+        
+        # Open all the images in the directory
+        for image in onlyfiles:    
+            try:
+                img = Image.open(self.path + "/"+ image)
+                img = img.resize((100, 100), Image.ANTIALIAS)
+                photo = ImageTk.PhotoImage(img)
+                self.label2 = Label(image=photo)
+                self.label2.image = photo 
+                self.label2.grid(column=col, row=row)
+                self.label2.configure(text = image)
+                self.label3 = Label()
+                self.label3.grid(column = col + 1, row = row)
+                self.label3.configure(text = image)
+                row = row + 1
+            except IOError:
+                print("Not an image!")
+
+root = Root()
+root.mainloop()
