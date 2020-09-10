@@ -2,8 +2,8 @@ from tkinter import *
 from PIL import ImageTk,Image
 
 root = Tk()
-root.title('Codemy.com Image Viewer')
-root.iconbitmap('c:/gui/codemy.ico')
+root.title('Image Viewer')
+#root.iconbitmap('c:/gui/codemy.ico')
 
 
 
