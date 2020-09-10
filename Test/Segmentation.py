@@ -82,6 +82,6 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
         plt.show()
     return perform_segmentation
 
-images = [imageConfigSegment("crop2.jpg"),imageConfigSegment("crop3.jpg"),imageConfigSegment("crop4.jpg",0.7)]
+images = [imageConfigSegment("crop2.jpg"),imageConfigSegment("crop3.jpg", 0.6, 100),imageConfigSegment("crop6.jpg",0.57,1000,1500)]
 for image in images:
     image()
