@@ -20,7 +20,7 @@ class Window(QMainWindow):
         self.setGeometry(100, 100, 800, 600) 
        
         # creating image object 
-        self.image = QImage(self.size(), "E:/Python/FinalProject/Final-Project-SCE/Test/website.jpg") 
+        self.image = QImage("E:/Python/FinalProject/Final-Project-SCE/Test/website.jpg") 
         
         # making image color to white 
         self.image.fill(Qt.white)
