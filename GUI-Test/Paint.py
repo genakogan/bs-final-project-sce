@@ -20,7 +20,7 @@ class Window(QMainWindow):
         self.image = QImage("crop.jpg") 
 
         # setting geometry to main window 
-        self.setGeometry(100, 100, self.image.size().width(), self.image.size().height()) 
+        self.setFixedSize(self.image.size().width(), self.image.size().height()) 
         
         # making image color to white 
         #self.image.fill(Qt.white)
@@ -210,7 +210,7 @@ class Window(QMainWindow):
   
 # create pyqt5 app 
 App = QApplication(sys.argv) 
-  
+ 
 # create the instance of our Window 
 window = Window() 
   
