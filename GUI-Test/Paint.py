@@ -16,14 +16,14 @@ class Window(QMainWindow):
         # setting title 
         self.setWindowTitle("Paint with PyQt5") 
 
-        # setting geometry to main window 
-        self.setGeometry(100, 100, 800, 600) 
-       
         # creating image object 
-        self.image = QImage("E:/Python/FinalProject/Final-Project-SCE/Test/website.jpg") 
+        self.image = QImage("crop.jpg") 
+
+        # setting geometry to main window 
+        self.setGeometry(100, 100, self.image.size().width(), self.image.size().height()) 
         
         # making image color to white 
-        self.image.fill(Qt.white)
+        #self.image.fill(Qt.white)
       
         # variables 
         # default brush size 
@@ -173,7 +173,7 @@ class Window(QMainWindow):
     def clear(self): 
         
         # make the whole canvas white 
-        self.image.fill(Qt.white) 
+        self.image = QImage("crop.jpg") 
         # update 
         self.update() 
   
