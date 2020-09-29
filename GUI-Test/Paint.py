@@ -4,23 +4,25 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import * 
 import sys 
 import PIL
-from tkinter import *
-from PIL import Image, ImageDraw, ImageTk
+#from tkinter import *
 # window class 
 
-
-class Window(QMainWindow): 
+global aa,bb 
+bb,aa=[],[]
+class Window(QMainWindow):
+  
     def __init__(self): 
         super().__init__() 
-  
+        
         # setting title 
         self.setWindowTitle("Paint with PyQt5") 
-
+        self.name="test2.tiff"
         # creating image object 
-        self.image = QImage("crop.jpg") 
-
+        self.image = QImage(self.name) 
+      
+    
         # setting geometry to main window 
-        self.setGeometry(100, 100, self.image.size().width(), self.image.size().height()) 
+        self.setFixedSize(self.image.size().width(), self.image.size().height()) 
         
         # making image color to white 
         #self.image.fill(Qt.white)
@@ -51,7 +53,7 @@ class Window(QMainWindow):
         # creating save action 
         saveAction = QAction("Save", self) 
         # adding short cut for save action 
-        saveAction.setShortcut("Ctrl + S") 
+        saveAction.setShortcut("Ctrl+s" or "Ctrl+S") 
         # adding save to the file menu 
         fileMenu.addAction(saveAction) 
         # adding action to the save 
@@ -60,11 +62,20 @@ class Window(QMainWindow):
         # creating clear action 
         clearAction = QAction("Clear", self) 
         # adding short cut to the clear action 
-        clearAction.setShortcut("Ctrl + C") 
+        clearAction.setShortcut("Ctrl+C" or "Ctrl+c") 
         # adding clear to the file menu 
         fileMenu.addAction(clearAction) 
         # adding action to the clear 
         clearAction.triggered.connect(self.clear) 
+  
+        # creating backward action
+        backwardAction=QAction("Backward",self)
+        backwardAction.setShortcut("Ctrl+z" or "Ctrl+Z")
+        fileMenu.addAction(backwardAction)
+        backwardAction.triggered.connect(self.backward)
+        
+  
+    
   
         # creating options for brush sizes 
         # creating action for selecting pixel of 4px 
@@ -100,35 +111,28 @@ class Window(QMainWindow):
         b_color.addAction(white) 
         white.triggered.connect(self.whiteColor) 
   
-        green = QAction("Green", self) 
-        b_color.addAction(green) 
-        green.triggered.connect(self.greenColor) 
-  
-        yellow = QAction("Yellow", self) 
-        b_color.addAction(yellow) 
-        yellow.triggered.connect(self.yellowColor) 
-  
         red = QAction("Red", self) 
         b_color.addAction(red) 
         red.triggered.connect(self.redColor) 
-  
-  
+        
+        
     # method for checking mouse cicks 
     def mousePressEvent(self, event): 
         
         # if left mouse button is pressed 
-        if event.button() == Qt.LeftButton: 
+        if event.button() == Qt.LeftButton:             
             # make drawing flag true 
             self.drawing = True
             # make last point to the point of cursor 
             self.lastPoint = event.pos() 
+        bb.append(aa)  
   
     # method for tracking mouse activity 
     def mouseMoveEvent(self, event): 
-          
+        
         # checking if left button is pressed and drawing flag is true 
         if (event.buttons() & Qt.LeftButton) & self.drawing: 
-              
+            
             # creating painter object 
             painter = QPainter(self.image) 
               
@@ -143,7 +147,10 @@ class Window(QMainWindow):
             # change the last point 
             self.lastPoint = event.pos() 
             # update 
+            aa.append(self.lastPoint)
+          
             self.update() 
+           
   
     # method for mouse left button release 
     def mouseReleaseEvent(self, event): 
@@ -162,7 +169,7 @@ class Window(QMainWindow):
   
     # method for saving canvas 
     def save(self): 
-        filePath, _ = QFileDialog.getSaveFileName(self, "Save Image", "", 
+        filePath, _ = QFileDialog.getSaveFileName(self, "Save Image", self.name, 
                           "PNG(*.png);;JPEG(*.jpg *.jpeg);;All Files(*.*) ") 
   
         if filePath == "": 
@@ -173,9 +180,19 @@ class Window(QMainWindow):
     def clear(self): 
         
         # make the whole canvas white 
-        self.image = QImage("crop.jpg") 
+        self.image = QImage(self.name) 
         # update 
         self.update() 
+  
+    def backward(self):
+        print(len(aa))
+        print(len(bb))
+        del aa[-1]
+        self.image = QImage(self.name)
+        self.update()
+        
+  
+    
   
     # methods for changing pixel sizes 
     def Pixel_4(self): 
@@ -196,21 +213,13 @@ class Window(QMainWindow):
   
     def whiteColor(self): 
         self.brushColor = Qt.white 
-  
-    def greenColor(self): 
-        self.brushColor = Qt.green 
-  
-    def yellowColor(self): 
-        self.brushColor = Qt.yellow 
-  
+    
     def redColor(self): 
         self.brushColor = Qt.red 
   
-  
-  
 # create pyqt5 app 
 App = QApplication(sys.argv) 
-  
+ 
 # create the instance of our Window 
 window = Window() 
   
