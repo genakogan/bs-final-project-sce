@@ -149,6 +149,8 @@ class Window(QMainWindow):
             # update 
             aa.append(self.lastPoint)
           
+            
+          
             self.update() 
            
   
