@@ -33,8 +33,24 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
     
     # The function Performs the segmentation
     def perform_segmentation():
+        # Open the image as basic image
+        im = Image.open(path)
+        
         # Open the image as numpy array
-        img = plt.imread(path)
+        #img = plt.imread(path)
+        
+        # Convert the image to numpy array
+        img = np.array(im)
+        
+        # Get the height and width of the image
+        height, width, depth = img.shape
+        
+        # Set DPI value for the image as default DPI
+        #dpi = im.info['dpi'][0]
+        dpi = 72
+        
+        # Calculate the correct figure size in order to save dimensions of the image
+        figsize = width / float(dpi), height / float(dpi)
 
         # Compute a mask for the bone
         lum = color.rgb2gray(img) # Convert the image to graycicle
@@ -56,38 +72,27 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
         m_slic = segmentation.slic(img, n_segments=1, mask=mask, start_label=1)
 
         # Display result
-        fig = plt.figure(figsize=(7, 7))
-        ax = fig.add_subplot(111)
-        ax.imshow(segmentation.mark_boundaries(img, slic), interpolation='nearest')
+        # Set the figure size the same as the real image size
+        fig = plt.figure(figsize = figsize)
+        ax = fig.add_axes([0, 0, 1, 1])
+        ax.imshow(segmentation.mark_boundaries(img, m_slic), interpolation='nearest')
         ax.contour(mask, colors='red', linewidths=0.5)
+        
+        # Disable axises in the result image
         plt.axis('off')
-        #plt.savefig('Preview.jpg', bbox_inches='tight')
         
         # Save the result as temporary image in the memory
         io_buf = io.BytesIO()
         plt.savefig(io_buf, bbox_inches='tight')
         io_buf.seek(0)
-        #img_arr = np.reshape(np.frombuffer(io_buf.getvalue(), dtype=np.uint8),
-        #                     newshape=(int(fig.bbox.bounds[3]), int(fig.bbox.bounds[2]), -1))
         img_arr = Image.open(io_buf)
         rgb = img_arr.convert('RGB')
         
+        # Close the buffer channel
         io_buf.close()
-        return img_arr
+        
+        # Close figure after end of segmentation in order to save memory
+        plt.close()
+        
+        return (img_arr)
     return perform_segmentation
-
-#images = [imageConfigSegment("crop2.jpg"),imageConfigSegment("crop3.jpg"),imageConfigSegment("crop4.jpg",0.7)]
-#for image in images:
-#    image()
-    
-#images = [imageConfigSegment("crop2.jpg"),imageConfigSegment("crop3.jpg", 0.6, 1000),imageConfigSegment("crop6.jpg",0.57,1000,1500)]
-#for image in images:
-#    image()
-#plt.imshow()
-#imageConfigSegment("crop3.jpg")()
-#plt.imshow(imageConfigSegment("crop2.jpg"))
-
-#Black and white pen
-#images = [imageConfigSegment("crop2.jpg"),imageConfigSegment("crop3.jpg", 0.6, 1000),imageConfigSegment("crop7c.jpg",0.57,1500,1500)]
-#for image in images:
-#    image()
