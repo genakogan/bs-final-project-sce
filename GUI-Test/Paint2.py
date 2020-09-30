@@ -4,13 +4,12 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import * 
 import sys 
 import PIL
-from PyQt5 import QtCore, QtGui, QtWidgets
 #from tkinter import *
 # window class 
 
 global aa,bb 
 bb,aa=[],[]
-class Window(QtWidgets.QMainWindow):
+class Window(QMainWindow):
   
     def __init__(self): 
         super().__init__() 
@@ -19,17 +18,11 @@ class Window(QtWidgets.QMainWindow):
         self.setWindowTitle("Paint with PyQt5") 
         self.name="test2.tiff"
         # creating image object 
-        ##self.image = QImage(self.name) 
-        #self.image = QtGui.QImage(self.name)
-        
-        self.imageDraw = QtGui.QImage(self.name)
-        #self.imageDraw.fill(QtCore.Qt.transparent)
+        self.image = QImage(self.name) 
+      
+    
         # setting geometry to main window 
-        self.setFixedSize(self.imageDraw.size().width(), self.imageDraw.size().height()) 
-        
-        
-        
-        
+        self.setFixedSize(self.image.size().width(), self.image.size().height()) 
         
         # making image color to white 
         #self.image.fill(Qt.white)
@@ -44,16 +37,10 @@ class Window(QtWidgets.QMainWindow):
   
         # QPoint object to tract the point 
         self.lastPoint = QPoint() 
-
-        # eraser
-        self.drawing = False
-        self._clear_size = 20
-        self.brushColor = QtGui.QColor(QtCore.Qt.black)
-        self.lastPoint = QtCore.QPoint()
-        
+  
         # creating menu bar 
         mainMenu = self.menuBar() 
-        self.change = False
+  
         # creating file menu for save and clear action 
         fileMenu = mainMenu.addMenu("File") 
   
@@ -66,7 +53,7 @@ class Window(QtWidgets.QMainWindow):
         # creating save action 
         saveAction = QAction("Save", self) 
         # adding short cut for save action 
-        saveAction.setShortcut("Ctrl+S") 
+        saveAction.setShortcut("Ctrl+s" or "Ctrl+S") 
         # adding save to the file menu 
         fileMenu.addAction(saveAction) 
         # adding action to the save 
@@ -75,7 +62,7 @@ class Window(QtWidgets.QMainWindow):
         # creating clear action 
         clearAction = QAction("Clear", self) 
         # adding short cut to the clear action 
-        clearAction.setShortcut("Ctrl+c") 
+        clearAction.setShortcut("Ctrl+C" or "Ctrl+c") 
         # adding clear to the file menu 
         fileMenu.addAction(clearAction) 
         # adding action to the clear 
@@ -83,17 +70,12 @@ class Window(QtWidgets.QMainWindow):
   
         # creating backward action
         backwardAction=QAction("Backward",self)
-        backwardAction.setShortcut("Ctrl+Z")
+        backwardAction.setShortcut("Ctrl+z" or "Ctrl+Z")
         fileMenu.addAction(backwardAction)
         backwardAction.triggered.connect(self.backward)
         
-        ## araser action
-        #eraserAction = QtWidgets.QAction("Eraser", self)
-        #eraserAction.setShortcut("Ctrl+X")
-        #fileMenu.addAction(eraserAction)
-        #eraser.addAction(eraserAction)
-        #eraserAction.triggered.connect(self.eraser)
-
+  
+    
   
         # creating options for brush sizes 
         # creating action for selecting pixel of 4px 
@@ -142,81 +124,47 @@ class Window(QtWidgets.QMainWindow):
             # make drawing flag true 
             self.drawing = True
             # make last point to the point of cursor 
-            self.lastPoint = event.pos()   
-  
-    ## method for tracking mouse activity 
-   #def mouseMoveEvent(self, event): 
+            self.lastPoint = event.pos() 
         
-        ## checking if left button is pressed and drawing flag is true 
-        #if (event.buttons() & Qt.LeftButton) & self.drawing: 
+  
+    # method for tracking mouse activity 
+    def mouseMoveEvent(self, event): 
+        
+        # checking if left button is pressed and drawing flag is true 
+        if (event.buttons() & Qt.LeftButton) & self.drawing: 
             
-            ## creating painter object 
-            #painter = QPainter(self.image) 
+            # creating painter object 
+            painter = QPainter(self.image) 
               
-            ## set the pen of the painter 
-           # painter.setPen(QPen(self.brushColor, self.brushSize,  
-                           # Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin)) 
+            # set the pen of the painter 
+            painter.setPen(QPen(self.brushColor, self.brushSize,  
+                            Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin)) 
               
-            ## draw line from the last point of cursor to the current point 
-            ## this will draw only one step 
-            #painter.drawLine(self.lastPoint, event.pos()) 
+            # draw line from the last point of cursor to the current point 
+            # this will draw only one step 
+            painter.drawLine(self.lastPoint, event.pos()) 
               
-            ## change the last point 
-            #self.lastPoint = event.pos() 
-            ## update           
-            #self.update() 
+            # change the last point 
+            self.lastPoint = event.pos() 
+            # update 
+            self.update() 
            
-    def mouseMoveEvent(self, event):
-        if event.buttons() and QtCore.Qt.LeftButton and self.drawing:
-            painter = QtGui.QPainter(self.imageDraw)
-            painter.setPen(QtGui.QPen(self.brushColor, self.brushSize, QtCore.Qt.SolidLine, QtCore.Qt.RoundCap, QtCore.Qt.RoundJoin))
-            if self.change:
-                r = QtCore.QRect(QtCore.QPoint(), self._clear_size*QtCore.QSize())
-                r.moveCenter(event.pos())
-                painter.save()
-                painter.setCompositionMode(QtGui.QPainter.CompositionMode_Clear)
-                painter.eraseRect(r)
-                painter.restore()
-            else:
-                painter.drawLine(self.lastPoint, event.pos())
-            painter.end()
-            self.lastPoint = event.pos()
-            self.update()
-            
+
     # method for mouse left button release 
     def mouseReleaseEvent(self, event): 
   
-        if event.button() == QtCore.Qt.LeftButton: 
+        if event.button() == Qt.LeftButton: 
             # make drawing flag false 
             self.drawing = False
   
-    ## paint event 
-    #def paintEvent(self, event): 
-        ## create a canvas 
-        #canvasPainter = QPainter(self)
-        ## draw rectangle  on the canvas 
-        #canvasPainter.drawImage(self.rect(), self.image, self.image.rect()) 
-       
-    def paintEvent(self, event):
-        canvasPainter = QtGui.QPainter(self)
-        #canvasPainter.drawImage(self.rect(), self.image, self.image.rect())
-        canvasPainter.drawImage(self.rect(), self.imageDraw, self.imageDraw.rect())
+    # paint event 
+    def paintEvent(self, event): 
+        # create a canvas 
+        canvasPainter = QPainter(self) 
+          
+        # draw rectangle  on the canvas 
+        canvasPainter.drawImage(self.rect(), self.image, self.image.rect()) 
   
-    
-    ## eraser method
-    #def eraser(self):
-        #self.change = not self.change
-        #if self.change:
-            #pixmap = QtGui.QPixmap(QtCore.QSize(1, 1)*self._clear_size)
-            #pixmap.fill(QtCore.Qt.transparent)
-            #painter = QtGui.QPainter(pixmap)
-            #painter.setPen(QtGui.QPen(QtCore.Qt.black, 2))
-            #painter.drawRect(pixmap.rect())
-            #painter.end()
-            #cursor = QtGui.QCursor(pixmap)
-            #QtWidgets.QApplication.setOverrideCursor(cursor)
-        #else:
-            #QtWidgets.QApplication.restoreOverrideCursor()  
     # method for saving canvas 
     def save(self): 
         filePath, _ = QFileDialog.getSaveFileName(self, "Save Image", self.name, 
@@ -224,18 +172,18 @@ class Window(QtWidgets.QMainWindow):
   
         if filePath == "": 
             return
-        self.imageDraw.save(filePath) 
+        self.image.save(filePath) 
   
     # method for clearing every thing on canvas 
     def clear(self): 
         
         # make the whole canvas white 
-        #self.image = QImage(self.name) 
-        self.imageDraw = QtGui.QImage(self.name)
+        self.image = QImage(self.name) 
         # update 
         self.update() 
   
     def backward(self):
+       
         self.image = QImage(self.name)
         self.update()
         
