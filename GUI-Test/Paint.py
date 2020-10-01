@@ -19,8 +19,8 @@ class Window(QtWidgets.QMainWindow):
         self.setWindowTitle("Paint with PyQt5") 
         self.name="test2.tiff"
         # creating image object 
-        ##self.image = QImage(self.name) 
-        #self.image = QtGui.QImage(self.name)
+        
+        self.image = QtGui.QImage(self.name)
         
         self.imageDraw = QtGui.QImage(self.name)
         #self.imageDraw.fill(QtCore.Qt.transparent)
@@ -87,12 +87,12 @@ class Window(QtWidgets.QMainWindow):
         fileMenu.addAction(backwardAction)
         backwardAction.triggered.connect(self.backward)
         
-        ## araser action
-        #eraserAction = QtWidgets.QAction("Eraser", self)
-        #eraserAction.setShortcut("Ctrl+X")
-        #fileMenu.addAction(eraserAction)
+        # araser action
+        eraserAction = QtWidgets.QAction("Eraser", self)
+        eraserAction.setShortcut("Ctrl+X")
+        fileMenu.addAction(eraserAction)
         #eraser.addAction(eraserAction)
-        #eraserAction.triggered.connect(self.eraser)
+        eraserAction.triggered.connect(self.eraser)
 
   
         # creating options for brush sizes 
@@ -202,26 +202,25 @@ class Window(QtWidgets.QMainWindow):
         #canvasPainter.drawImage(self.rect(), self.image, self.image.rect()) 
        
     def paintEvent(self, event):
-        canvasPainter = QtGui.QPainter(self)
-        #canvasPainter.drawImage(self.rect(), self.image, self.image.rect())
-       
+        canvasPainter = QPainter(self)
+        canvasPainter.drawImage(self.rect(),self.image, self.image.rect())
         canvasPainter.drawImage(self.rect(), self.imageDraw, self.imageDraw.rect())
   
     
-    ## eraser method
-    #def eraser(self):
-        #self.change = not self.change
-        #if self.change:
-            #pixmap = QtGui.QPixmap(QtCore.QSize(1, 1)*self._clear_size)
-            #pixmap.fill(QtCore.Qt.transparent)
-            #painter = QtGui.QPainter(pixmap)
-            #painter.setPen(QtGui.QPen(QtCore.Qt.black, 2))
-            #painter.drawRect(pixmap.rect())
-            #painter.end()
-            #cursor = QtGui.QCursor(pixmap)
-            #QtWidgets.QApplication.setOverrideCursor(cursor)
-        #else:
-            #QtWidgets.QApplication.restoreOverrideCursor()  
+    # eraser method
+    def eraser(self):
+        self.change = not self.change
+        if self.change:
+            pixmap = QtGui.QPixmap(QtCore.QSize(1, 1)*self._clear_size)
+            pixmap.fill(QtCore.Qt.transparent)
+            painter = QtGui.QPainter(pixmap)
+            painter.setPen(QtGui.QPen(QtCore.Qt.black, 2))
+            painter.drawRect(pixmap.rect())
+            painter.end()
+            cursor = QtGui.QCursor(pixmap)
+            QtWidgets.QApplication.setOverrideCursor(cursor)
+        else:
+            QtWidgets.QApplication.restoreOverrideCursor()  
     # method for saving canvas 
     def save(self): 
         filePath, _ = QFileDialog.getSaveFileName(self, "Save Image", self.name, 
