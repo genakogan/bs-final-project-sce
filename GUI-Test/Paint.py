@@ -142,7 +142,9 @@ class Window(QtWidgets.QMainWindow):
             # make drawing flag true 
             self.drawing = True
             # make last point to the point of cursor 
-            self.lastPoint = event.pos()   
+            self.lastPoint = event.pos()
+            
+            
   
     ## method for tracking mouse activity 
    #def mouseMoveEvent(self, event): 
@@ -181,6 +183,7 @@ class Window(QtWidgets.QMainWindow):
                 painter.drawLine(self.lastPoint, event.pos())
             painter.end()
             self.lastPoint = event.pos()
+            
             self.update()
             
     # method for mouse left button release 
@@ -189,6 +192,7 @@ class Window(QtWidgets.QMainWindow):
         if event.button() == QtCore.Qt.LeftButton: 
             # make drawing flag false 
             self.drawing = False
+           
   
     ## paint event 
     #def paintEvent(self, event): 
@@ -200,6 +204,7 @@ class Window(QtWidgets.QMainWindow):
     def paintEvent(self, event):
         canvasPainter = QtGui.QPainter(self)
         #canvasPainter.drawImage(self.rect(), self.image, self.image.rect())
+       
         canvasPainter.drawImage(self.rect(), self.imageDraw, self.imageDraw.rect())
   
     
@@ -236,6 +241,7 @@ class Window(QtWidgets.QMainWindow):
         self.update() 
   
     def backward(self):
+       
         self.image = QImage(self.name)
         self.update()
         
