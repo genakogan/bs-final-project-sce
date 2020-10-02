@@ -1,16 +1,14 @@
 # importing libraries 
+from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import * 
 from PyQt5.QtGui import * 
 from PyQt5.QtCore import * 
 import sys 
 import PIL
-from PyQt5 import QtCore, QtGui, QtWidgets
-#from tkinter import *
-# window class 
 
-global aa,bb 
-bb,aa=[],[]
-class Window(QtWidgets.QMainWindow):
+
+# window class 
+class Window(QMainWindow):
   
     def __init__(self): 
         super().__init__() 
@@ -19,20 +17,11 @@ class Window(QtWidgets.QMainWindow):
         self.setWindowTitle("Paint with PyQt5") 
         self.name="test2.tiff"
         # creating image object 
-        
         self.image = QtGui.QImage(self.name)
-        
         self.imageDraw = QtGui.QImage(self.name)
         #self.imageDraw.fill(QtCore.Qt.transparent)
         # setting geometry to main window 
         self.setFixedSize(self.imageDraw.size().width(), self.imageDraw.size().height()) 
-        
-        
-        
-        
-        
-        # making image color to white 
-        #self.image.fill(Qt.white)
       
         # variables 
         # default brush size 
@@ -143,31 +132,8 @@ class Window(QtWidgets.QMainWindow):
             self.drawing = True
             # make last point to the point of cursor 
             self.lastPoint = event.pos()
-            
-            
-  
-    ## method for tracking mouse activity 
-   #def mouseMoveEvent(self, event): 
         
-        ## checking if left button is pressed and drawing flag is true 
-        #if (event.buttons() & Qt.LeftButton) & self.drawing: 
-            
-            ## creating painter object 
-            #painter = QPainter(self.image) 
-              
-            ## set the pen of the painter 
-           # painter.setPen(QPen(self.brushColor, self.brushSize,  
-                           # Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin)) 
-              
-            ## draw line from the last point of cursor to the current point 
-            ## this will draw only one step 
-            #painter.drawLine(self.lastPoint, event.pos()) 
-              
-            ## change the last point 
-            #self.lastPoint = event.pos() 
-            ## update           
-            #self.update() 
-           
+        
     def mouseMoveEvent(self, event):
         if event.buttons() and QtCore.Qt.LeftButton and self.drawing:
             painter = QtGui.QPainter(self.imageDraw)
@@ -183,30 +149,20 @@ class Window(QtWidgets.QMainWindow):
                 painter.drawLine(self.lastPoint, event.pos())
             painter.end()
             self.lastPoint = event.pos()
-            
             self.update()
-            
+          
     # method for mouse left button release 
     def mouseReleaseEvent(self, event): 
   
         if event.button() == QtCore.Qt.LeftButton: 
             # make drawing flag false 
             self.drawing = False
-           
-  
-    ## paint event 
-    #def paintEvent(self, event): 
-        ## create a canvas 
-        #canvasPainter = QPainter(self)
-        ## draw rectangle  on the canvas 
-        #canvasPainter.drawImage(self.rect(), self.image, self.image.rect()) 
        
     def paintEvent(self, event):
         canvasPainter = QPainter(self)
         canvasPainter.drawImage(self.rect(),self.image, self.image.rect())
         canvasPainter.drawImage(self.rect(), self.imageDraw, self.imageDraw.rect())
-  
-    
+
     # eraser method
     def eraser(self):
         self.change = not self.change
@@ -238,15 +194,11 @@ class Window(QtWidgets.QMainWindow):
         self.imageDraw = QtGui.QImage(self.name)
         # update 
         self.update() 
-  
+   # Undo method
     def backward(self):
-       
         self.image = QImage(self.name)
         self.update()
         
-  
-    
-  
     # methods for changing pixel sizes 
     def Pixel_4(self): 
         self.brushSize = 4
