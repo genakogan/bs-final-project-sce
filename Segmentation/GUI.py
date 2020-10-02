@@ -14,6 +14,7 @@ from os import listdir
 from os.path import isfile, join
 from tkinter import Menu
 import Segmentation as seg
+import Paint as pnt
 
 # Constant variable definition
 DEFAULT_THRESHOLD = 0.6
@@ -148,7 +149,7 @@ class Root(Tk):
             self.btnSegmentPreview.grid(column = 2, row = 4, sticky='w')
             
             # Add button for image edit
-            self.btnSegmentPreview = ttk.Button(self.frameImage, text="Edit", command='')
+            self.btnSegmentPreview = ttk.Button(self.frameImage, text="Edit", command=self.editImage)
             self.btnSegmentPreview.config(width=20)
             self.btnSegmentPreview.grid(column = 3, row = 4, sticky='w')
             
@@ -217,7 +218,11 @@ class Root(Tk):
             self.lbFiles.insert(nImgIndex,image)
             nImgIndex = nImgIndex + 1
             
-    
+    def editImage(self):
+        #App = pnt.QApplication(sys.argv)
+        window = pnt.Window(self.currentFile)
+        mainloop()
+        
     def fileDialog(self):
 
         # Browse for directory of images

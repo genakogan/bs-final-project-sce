@@ -1,18 +1,13 @@
 from PyQt5 import QtGui
 from PyQt5.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QGraphicsView, QGraphicsItem
-from PyQt5.QtGui import QPen, QBrush, QPixmap
+from PyQt5.QtGui import QPen, QBrush
 from PyQt5.Qt import Qt
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import * 
-from PyQt5.QtGui import * 
-from PyQt5.QtCore import * 
  
-import PIL.ImageQt as imqt
 import sys
 import time
  
 class Window(QMainWindow):
-    def __init__(self):
+    def __init__(self, filename):
         super().__init__()
  
         self.title = "PyQt5 QGraphicView"
@@ -21,21 +16,19 @@ class Window(QMainWindow):
         self.width = 600
         self.height = 500
         self.lines = []
+        self.filename = filename
  
         self.InitWindow()
  
  
     def InitWindow(self):
         self.setWindowIcon(QtGui.QIcon("icon.png"))
-        self.setWindowTitle(self.title)
+        self.setWindowTitle(self.filename)
         self.setGeometry(self.left, self.top, self.width, self.height)
  
-        self.createGraphicView()   
+        self.createGraphicView()
  
-        #self.view.fitInView(QRectF(0, 0, w, h), Qt.KeepAspectRatio)
-        
         self.show()
-        self.save_image()
  
  
     def createGraphicView(self):
@@ -48,13 +41,7 @@ class Window(QMainWindow):
         graphicView = QGraphicsView(self.scene, self)
         graphicView.setGeometry(0,0,600,500)
  
-        # Display image
-        self.imgQ = imqt.ImageQt("crop.jpg")  # we need to hold reference to imgQ, or it will crash
-        pixMap = QPixmap.fromImage(self.imgQ)
-        self.scene.addPixmap(pixMap)
- 
         self.shapes()
-        
         """
         #delline = self.line.pop()
         self.scene.removeItem(self.ellipse)
@@ -75,31 +62,17 @@ class Window(QMainWindow):
         currentLine = self.line.pop()
         for x in currentLine:
             self.scene.removeItem(x)
-            
-        """
-        #self.ellipse.setFlag(QGraphicsItem.ItemIsMovable)
-        #rect.setFlag(QGraphicsItem.ItemIsMovable)
-        #self.ellipse.setFlag(QGraphicsItem.ItemIsSelectable)
+          """  
+        
+        self.ellipse.setFlag(QGraphicsItem.ItemIsMovable)
+        rect.setFlag(QGraphicsItem.ItemIsMovable)
+        self.ellipse.setFlag(QGraphicsItem.ItemIsSelectable)
         
  
-    def _save_image(self):
-
-        # Get region of scene to capture from somewhere.
-        area = get_QRect_to_capture_from_somewhere()
-    
-        # Create a QImage to render to and fix up a QPainter for it.
-        image = QImage(area.size(), QImage.Format_ARGB32_Premultiplied)
-        painter = QPainter(image)
-    
-        # Render the region of interest to the QImage.
-        self.scene.render(painter, image.rect(), area)
-        painter.end()
-    
-        # Save the image to a file.
-        image.save("capture.png")
+ 
  
  
  
 App = QApplication(sys.argv)
-window = Window()
-sys.exit(App.exec())
+#window = Window()
+#sys.exit(App.exec())
