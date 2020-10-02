@@ -19,7 +19,6 @@ class Window(QMainWindow):
         # creating image object 
         self.image = QtGui.QImage(self.name)
         self.imageDraw = QtGui.QImage(self.name)
-        #self.imageDraw.fill(QtCore.Qt.transparent)
         # setting geometry to main window 
         self.setFixedSize(self.imageDraw.size().width(), self.imageDraw.size().height()) 
       
