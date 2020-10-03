@@ -163,7 +163,8 @@ class Root(Tk):
             #self.btnSegmentPreview.lift()
             
         except IOError:
-            print("Not an image!")
+            #print("Not an image!")
+            print(IOError.message)
             
     def zoomer(self, event):
         if (event.delta > 0):
@@ -175,6 +176,7 @@ class Root(Tk):
     # mouse move
     def move_start(self, event):
         self.imgCanvas.scan_mark(event.x, event.y)
+        
     def move_move(self, event):
         self.imgCanvas.scan_dragto(event.x, event.y, gain=1)
         
@@ -217,10 +219,11 @@ class Root(Tk):
         for image in onlyfiles:    
             self.lbFiles.insert(nImgIndex,image)
             nImgIndex = nImgIndex + 1
-            
+    
+    # Function for button edit image
     def editImage(self):
-        #App = pnt.QApplication(sys.argv)
         window = pnt.Window(self.currentFile)
+        window.show() 
         mainloop()
         
     def fileDialog(self):
