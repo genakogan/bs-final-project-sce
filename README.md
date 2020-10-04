@@ -10,7 +10,7 @@ Step 2) Open Anaconda Prompt. Type below command
 
 Step 3) Launch Spyder application from Anaconda. Go to Projects in Menubar and click New project. 
 
-```https://www.anaconda.com/products/individual```
+[ https://www.anaconda.com/products/individual ]
 
 Step 4) Init working directory as a git directory. Tpe below command
 
