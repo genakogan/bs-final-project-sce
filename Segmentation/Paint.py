@@ -172,14 +172,14 @@ class Window(QMainWindow):
         if event.buttons() and QtCore.Qt.LeftButton and self.drawing:
             painter = QtGui.QPainter(self.imageDraw)
             painter.setPen(QtGui.QPen(self.brushColor, self.brushSize, QtCore.Qt.SolidLine, QtCore.Qt.RoundCap, QtCore.Qt.RoundJoin))
-            if self.change:
-                r = QtCore.QRect(QtCore.QPoint(), self._clear_size*QtCore.QSize())
+            if not self.change:
+                """r = QtCore.QRect(QtCore.QPoint(), self._clear_size*QtCore.QSize())
                 r.moveCenter(event.pos())
                 painter.save()
                 painter.setCompositionMode(QtGui.QPainter.CompositionMode_Clear)
                 painter.eraseRect(r)
-                painter.restore()
-            else:
+                painter.restore()"""
+            #else:
                 # Scale the point according to windows size
                 newX = event.x() / self.scale_x
                 newY = event.y() / self.scale_y
