@@ -1,6 +1,6 @@
 # Final-Project-SCE
 
-## Connection python spyder with Final-Project-SCE
+## Connection python spyder with Final-Project-SCE repository
 
 Step 1) Download and Install Git
 
