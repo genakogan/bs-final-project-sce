@@ -33,3 +33,15 @@ step 3) Open Git GUI and Create Repositry in the required "FilePath" with "FileN
 Step 4) Launch Spyder application from Anaconda. Go to Projects in Menubar and click New project
 
 Step 5) Select Existing Directory in location goto "FilePath" [where Git Repositry was created in step 3] and select directory with "FileName"[Git Repositry name] and click on create.
+
+## Required libraries - tk, pillow, scikit-image, matplotlib. Type bellow command
+
+Install required libraries - tk, pillow, scikit-image, matplotlib. Type bellow command
+
+```pip install tk```
+
+```pip install pillow```
+
+```pip install scikit-image```
+
+```pip install matplotlib```
