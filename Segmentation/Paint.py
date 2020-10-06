@@ -1,3 +1,4 @@
+
 # importing libraries 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import * 
@@ -13,7 +14,7 @@ class Window(QMainWindow):
         super().__init__() 
 
         # setting title 
-        self.setWindowTitle("Paint with PyQt5") 
+        self.setWindowTitle("Image Editor") 
         
         # Set file name and path
         self.name = filepath

@@ -5,33 +5,40 @@ Created on Thu Sep  3 17:29:23 2020
 @author: Aviel-PC
 """
 
-from tkinter import *
-from tkinter import ttk
-from tkinter import filedialog
-from tkinter import messagebox
-from PIL import Image, ImageTk
-from os import listdir
-from os.path import isfile, join
-from tkinter import Menu
-import Segmentation as seg
-import Paint as pnt
+try:
+    from datetime import datetime
+    from tkinter import *
+    from tkinter import ttk
+    from tkinter import filedialog
+    from tkinter import messagebox
+    from PIL import Image, ImageTk
+    from os import listdir
+    from os.path import isfile, join
+    from tkinter import Menu
+    import Segmentation as seg
+    import Paint as pnt
+except ImportError as impError:
+    with open('importLog.txt', 'a') as import_log_file:
+        import_log_file.write("Date - " + str(datetime.now().strftime("%d/%m/%Y %H:%M:%S")) + "\n" + str(impError) + "\n")
+    sys.exit()
+    
 
 # Constant variable definition
-DEFAULT_THRESHOLD = 0.6
-DEFAULT_MIN_SIZE = 1000
-DEFAULT_AREA_SIZE = 1000
+DEFAULT_THRESHOLD       = 0.6     # Default threshold value
+DEFAULT_MIN_SIZE        = 1000    # Default min size of object for segmentation
+DEFAULT_AREA_SIZE       = 1000    # Default area threshold for segmentation
+ZOOM_IN_SCALE           = 1.1     # Zoom in scale size
+ZOOM_OUT_SCALE          = 0.9     # Zoom out scale size
+MIN_DISPLAY_SIZE_WIDTH  = 400     # Minimum size in pixel of displayed image of width
+MIN_DISPLAY_SIZE_HEIGHT = 400     # Minimum size in pixel of displayed image of height
 
 # Code segment
 
 class Root(Tk):
     def __init__(self):
         super(Root, self).__init__()
-        self.title("Python Tkinter Dialog Widget")
+        self.title("Bone Segmentation")
         self.minsize(800, 600)
-
-        #self.labelFrame = ttk.LabelFrame(self, text = "Open File")
-        #self.labelFrame.grid(column = 0, row = 1, padx = 20, pady = 20)
-        #self.labelFrame.pack()
         
         self.upperMenu()
         self.imageSelectPanel()
@@ -105,20 +112,21 @@ class Root(Tk):
             # Create canvas for image
             self.imgCanvas = Canvas(self.frameImage, width = 500, height = 500)
             
-            # Configure scroll area for image
-            self.imgCanvas.configure(scrollregion=(0,0,1000,1000))
+            # Place the image canvas in the correct location in the window
             self.imgCanvas.grid(column = 0, row = 0, padx=120, sticky='n', columnspan=100)
-
             
             # Prepare the image with first segmentation
-            img = seg.imageConfigSegment(self.currentFile)()
-            img = img.resize((400, 400), Image.ANTIALIAS)
+            self.img = seg.imageConfigSegment(self.currentFile)()
+            self.img = self.img.resize((MIN_DISPLAY_SIZE_WIDTH, MIN_DISPLAY_SIZE_HEIGHT), Image.ANTIALIAS)
             
             # Put photo as attribute in order to prevent garbage collection
-            self.photo = ImageTk.PhotoImage(img)
+            self.photo = ImageTk.PhotoImage(self.img)
             
             # put image on canvas pic's upper left corner (NW) on the canvas
-            self.imgCanvas.create_image((0,0), image=self.photo, anchor=NW)
+            self.imgCanvas.create_image((self.imgCanvas.winfo_width() / 2, self.imgCanvas.winfo_height() / 2), image=self.photo)
+            
+            # Configure scroll area for image
+            self.imgCanvas.configure(scrollregion = self.imgCanvas.bbox("all"))
             
             # Add sliders for segmentation options:
             self.thresholdLbl = Label(self.frameImage, text="Threshold:").grid(row=1,padx=20, sticky=W)
@@ -167,10 +175,33 @@ class Root(Tk):
             print(IOError.message)
             
     def zoomer(self, event):
+        # Get image current size
+        width, height = self.img.size
+        
+        # If moved the mouse wheel forward
         if (event.delta > 0):
-            self.imgCanvas.scale("all", event.x, event.y, 1.1, 1.1)
+            # Resize the image bythe zoom in scale value
+            self.img = self.img.resize((int(width * ZOOM_IN_SCALE), int(height * ZOOM_IN_SCALE)), Image.ANTIALIAS)
+            
+        # If moved the mouse wheel backward
         elif (event.delta < 0):
-            self.imgCanvas.scale("all", event.x, event.y, 0.5, 0.5)
+            # Check if the size after resize will be less than minimum image size
+            if ((int(width * ZOOM_OUT_SCALE) > MIN_DISPLAY_SIZE_WIDTH) and 
+                (int(height * ZOOM_OUT_SCALE) > MIN_DISPLAY_SIZE_HEIGHT)):
+    
+                # Resize the image bythe zoom out scale value
+                self.img = self.img.resize((int(width * ZOOM_OUT_SCALE), int(height * ZOOM_OUT_SCALE)), Image.ANTIALIAS)
+        
+        # Put photo as attribute in order to prevent garbage collection
+        self.photo = ImageTk.PhotoImage(self.img)
+        
+        # Clear canvas before zoom
+        self.imgCanvas.delete("all")
+        
+        # put image on canvas pic's upper left corner (NW) on the canvas
+        self.imgCanvas.create_image((0,0), image=self.photo, anchor=NW)
+        
+        # Configure canvas to be scrollabale
         self.imgCanvas.configure(scrollregion = self.imgCanvas.bbox("all"))
 
     # mouse move
@@ -187,14 +218,14 @@ class Root(Tk):
         minSizeVal = self.minSizeVal.get()
         areaVal = self.areaVal.get()
         
+        # Save image shape before segmentation in order to save the scale
+        width, height = self.img.size
+        
         try:
             # Perform the segmentation after changing values
-            img = seg.imageConfigSegment(currentFile, threshold, minSizeVal, areaVal)()
-            img = img.resize((400, 400), Image.ANTIALIAS)
-            self.photo = ImageTk.PhotoImage(img)
-            #self.imgPreview = Label(self.frameImage, image=photo)
-            #self.imgPreview.image = photo 
-            #self.imgPreview.grid(column = 0, row = 0, padx=120, sticky='n', columnspan=100)
+            self.img = seg.imageConfigSegment(currentFile, threshold, minSizeVal, areaVal)()
+            self.img = self.img.resize((width, height), Image.ANTIALIAS)
+            self.photo = ImageTk.PhotoImage(self.img)
             
             # put image on canvas pic's upper left corner (NW) on the canvas
             self.imgCanvas.create_image((0,0), image=self.photo, anchor=NW)
@@ -236,5 +267,11 @@ class Root(Tk):
             self.lbFiles.delete(0,'end')
             self.loadImagesInPath()
 
-root = Root()
-root.mainloop()
+# Check if we are running the module from the main scope
+if __name__ == "__main__":
+    # Execute only if run from the main file and not as import
+    
+    # Run the main GUI
+    root = Root()
+    root.mainloop()
+
