@@ -45,3 +45,10 @@ Install required libraries - tk, pillow, scikit-image, matplotlib. Type bellow c
 ```pip install scikit-image```
 
 ```pip install matplotlib```
+
+## Error in Git
+
+### “Unable to obtain your identity” 
+
+Follow this link: https://stackoverflow.com/questions/25414599/unable-to-obtain-your-identity-error-in-git
+
