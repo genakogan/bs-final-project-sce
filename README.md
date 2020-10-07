@@ -50,5 +50,13 @@ Install required libraries - tk, pillow, scikit-image, matplotlib. Type bellow c
 
 ### “Unable to obtain your identity” 
 
-Follow this link: https://stackoverflow.com/questions/25414599/unable-to-obtain-your-identity-error-in-git
+Run:
+
+```!git config --global user.email "you@example.com"```
+
+```git config --global user.name "Your Name"```
+
+```git commit -m first```
+
+
 
