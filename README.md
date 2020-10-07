@@ -54,9 +54,9 @@ Run:
 
 ```!git config --global user.email "you@example.com"```
 
-```git config --global user.name "Your Name"```
+```!git config --global user.name "Your Name"```
 
-```git commit -m first```
+```!git commit -m first```
 
 
 
