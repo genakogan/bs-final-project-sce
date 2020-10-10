@@ -18,7 +18,7 @@ Step 4) Init working directory as a git directory. Tpe below command
 
 Step 5) Pull existing repository to merge with files you want to push. Type below command
 
-```!git remote add origin https://github.com/GenadyKogan/Final-Project-SCE.git```
+```!git clone https://github.com/GenadyKogan/Final-Project-SCE.git```
 
 ## Connection python spyder with new repository
 
@@ -34,6 +34,18 @@ Step 4) Launch Spyder application from Anaconda. Go to Projects in Menubar and c
 
 Step 5) Select Existing Directory in location goto "FilePath" [where Git Repositry was created in step 3] and select directory with "FileName"[Git Repositry name] and click on create.
 
+## Error in Git
+
+### “Unable to obtain your identity” 
+
+Run:
+
+```!git config --global user.email "you@example.com"```
+
+```!git config --global user.name "Your Name"```
+
+```!git commit -m first```
+
 ## Required libraries
 
 Install required libraries - tk, pillow, scikit-image, matplotlib. Type bellow command
@@ -46,17 +58,7 @@ Install required libraries - tk, pillow, scikit-image, matplotlib. Type bellow c
 
 ```pip install matplotlib```
 
-## Error in Git
-
-### “Unable to obtain your identity” 
-
-Run:
-
-```!git config --global user.email "you@example.com"```
-
-```!git config --global user.name "Your Name"```
-
-```!git commit -m first```
+```
 
 
 
