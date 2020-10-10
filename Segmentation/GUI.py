@@ -96,6 +96,8 @@ class Root(Tk):
        filepath = word_bag_GUI.select_PDF()
        PDF_file = open("E:/Python/Final Project/Final-Project-SCE/Segmentation/", 'GKAR')
        read_pdf = PyPDF2.PdfFileReader(PDF_file)
+       
+       
     def programExit(self):
         self.destroy()
     # Exit using ctrl+Q    
