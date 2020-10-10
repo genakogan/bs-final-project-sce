@@ -17,6 +17,7 @@ try:
     from tkinter import Menu
     import Segmentation as seg
     import Paint as pnt 
+    #import AboutWindow as ab
 except ImportError as impError:
     with open('importLog.txt', 'a') as import_log_file:
         import_log_file.write("Date - " + str(datetime.now().strftime("%d/%m/%Y %H:%M:%S")) + "\n" + str(impError) + "\n")
@@ -84,7 +85,7 @@ class Root(Tk):
         self.config(menu=self.menu)
         
        
-        helpMenu.add_command(label='About', command = self.about)
+        helpMenu.add_command(label='About', command = self.aboutWindow)
         
         # Add separator for the Documentation button
         helpMenu.add_separator()
@@ -92,10 +93,7 @@ class Root(Tk):
         # Add Documentation button to Help menu
         helpMenu.add_command(label='Documentation', command = self.programExit)
         
-    def about(self):
-       filepath = word_bag_GUI.select_PDF()
-       PDF_file = open("E:/Python/Final Project/Final-Project-SCE/Segmentation/", 'GKAR')
-       read_pdf = PyPDF2.PdfFileReader(PDF_file)
+    
        
        
     def programExit(self):
@@ -291,6 +289,9 @@ class Root(Tk):
         window = pnt.Window(self.currentFile,self.path)
         window.show() 
         mainloop()
+    def aboutWindow(self):
+        print("newWindow")
+       
         
     def fileDialog(self):
 

@@ -1,26 +1,20 @@
-#Create Menubar in Python GUI Application  
-import tkinter as tk  
-from tkinter import ttk  
-from tkinter import Menu  
-win = tk.Tk()  
-win.title("Python GUI App")  
-#Exit action  
-def _quit():  
-   win.quit()  
-   win.destroy()  
-   exit()  
-#Create Menu Bar  
-menuBar=Menu(win)  
-win.config(menu=menuBar)  
-#File Menu  
-fileMenu= Menu(menuBar, tearoff=0)  
-fileMenu.add_command(label="New")  
-fileMenu.add_separator()  
-fileMenu.add_command(label="Exit", command=_quit)  
-menuBar.add_cascade(label="File", menu=fileMenu)  
-#Help Menu  
-helpMenu= Menu(menuBar, tearoff=0)  
-helpMenu.add_command(label="About")  
-menuBar.add_cascade(label="Help", menu=helpMenu)  
-#Calling Main()  
-win.mainloop()
+import tkinter as tk
+
+root = tk.Tk()
+S = tk.Scrollbar(root)
+T = tk.Text(root, height=4, width=50)
+S.pack(side=tk.RIGHT, fill=tk.Y)
+T.pack(side=tk.LEFT, fill=tk.Y)
+S.config(command=T.yview)
+T.config(yscrollcommand=S.set)
+quote = """HAMLET: To be, or not to be--that is the question:
+Whether 'tis nobler in the mind to suffer
+The slings and arrows of outrageous fortune
+Or to take arms against a sea of troubles
+And by opposing end them. To die, to sleep--
+No more--and by a sleep to say we end
+The heartache, and the thousand natural shocks
+That flesh is heir to. 'Tis a consummation
+Devoutly to be wished."""
+T.insert(tk.END, quote)
+tk.mainloop()
