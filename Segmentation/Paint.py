@@ -10,12 +10,13 @@ import PIL
 # window class 
 class Window(QMainWindow):
     
-    def __init__(self, filepath): 
+    def __init__(self, filepath,fileP): 
         super().__init__() 
 
         # setting title 
         self.setWindowTitle("Image Editor") 
-        
+        print(fileP)
+        self.aa=fileP
         # Set file name and path
         self.name = filepath
         
@@ -53,6 +54,8 @@ class Window(QMainWindow):
         mainMenu = self.menuBar() 
         self.change = False
         
+       
+        
         # creating file menu for save and clear action 
         fileMenu = mainMenu.addMenu("File")
         
@@ -63,8 +66,8 @@ class Window(QMainWindow):
         b_size = mainMenu.addMenu("Brush Size") 
   
         # adding brush color to ain menu 
-        b_color = mainMenu.addMenu("Brush Color") 
-  
+        b_color = mainMenu.addMenu("Brush Color")      
+        
         # creating save action 
         saveAction = QAction("Save", self) 
         # adding short cut for save action 
@@ -73,6 +76,14 @@ class Window(QMainWindow):
         fileMenu.addAction(saveAction) 
         # adding action to the save 
         saveAction.triggered.connect(self.save) 
+        
+        saveAsAction = QAction("Save", self) 
+        # adding short cut for save action 
+        saveAsAction.setShortcut("Ctrl+Alt+S") 
+        # adding save to the file menu 
+        fileMenu.addAction(saveAsAction) 
+        # adding action to the save 
+        saveAsAction.triggered.connect(self.saveAs) 
   
         # creating clear action 
         clearAction = QAction("Clear", self) 
@@ -82,6 +93,17 @@ class Window(QMainWindow):
         fileMenu.addAction(clearAction) 
         # adding action to the clear 
         clearAction.triggered.connect(self.clear) 
+  
+    
+        exitAct = QAction('Exit', self)
+        exitAct.setShortcut('Ctrl+Q')
+        exitAct.triggered.connect(self.close)
+        fileMenu.addAction(exitAct)
+    
+  
+    
+  
+    
   
         # creating undo action
         self.undoAction=QAction("Undo",self)
@@ -137,6 +159,8 @@ class Window(QMainWindow):
         red = QAction("Red", self) 
         b_color.addAction(red) 
         red.triggered.connect(self.redColor) 
+        
+        
         
         
     # method for checking mouse cicks 
@@ -224,18 +248,23 @@ class Window(QMainWindow):
         # Draw the image on the canvas
         canvasPainter.drawImage(self.rect(), self.imageDraw, self.imageDraw.rect())
 
-    # method for saving canvas 
-    def save(self):
+    # method for saving canvas "save"
+    def save(self):        
+        # Path is correct save the image to the path
+        self.imageDraw.save(self.aa+"/"+self.name) 
+        
+    # method for saving canvas "save as"
+    def saveAs(self):
         # Set file path
         filePath, _ = QFileDialog.getSaveFileName(self, "Save Image", self.name, 
                           "PNG(*.png);;JPEG(*.jpg *.jpeg);;All Files(*.*) ") 
-        
+       
         # If path is empty then wrong path - don't save the image
         if ( filePath == "" ): 
             return
         
         # Path is correct save the image to the path
-        self.imageDraw.save(filePath) 
+        self.imageDraw.save(filePath)
   
     # method for clearing every thing on canvas 
     def clear(self): 
@@ -315,5 +344,10 @@ class Window(QMainWindow):
     def redColor(self): 
         self.brushColor = Qt.red 
   
-# create pyqt5 app 
+    
+  
+
+        #self.setGeometry(300, 300, 300, 200)
+       # self.setWindowTitle('Toolbar')
+        #self.show()# create pyqt5 app 
 App = QApplication(sys.argv)

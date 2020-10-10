@@ -46,6 +46,7 @@ class Root(Tk):
         # Disable resize of the window
         self.resizable(False, False)
         
+        
     def upperMenu(self):
         # Create the upper menu
         self.menu = Menu(self)
@@ -59,14 +60,20 @@ class Root(Tk):
         # Add separator for the exit button
         fileMenu.add_separator()
         
-        # Add exit button to File menu
-        fileMenu.add_command(label='Exit', command = self.programExit)
+        
         
         # Add the file menu to the upper menu
         self.menu.add_cascade(label='File', menu=fileMenu)
         self.config(menu=self.menu)
+        
+        # Add exit button to File menu
+        fileMenu.add_command(label='Exit', command = self.programExit,accelerator="Ctrl+Q")
+        self.bind_all("<Control-q>", self.quit)
     
     def programExit(self):
+        self.destroy()
+    # Exit using ctrl+Q    
+    def quit(self, event):
         self.destroy()
         
     def imageSelectPanel(self):
@@ -253,7 +260,7 @@ class Root(Tk):
     
     # Function for button edit image
     def editImage(self):
-        window = pnt.Window(self.currentFile)
+        window = pnt.Window(self.currentFile,self.path)
         window.show() 
         mainloop()
         
@@ -261,7 +268,6 @@ class Root(Tk):
 
         # Browse for directory of images
         self.path = filedialog.askdirectory()
-        
         # Check if path was selected open all images in path
         if self.path != '':
             self.lbFiles.delete(0,'end')
