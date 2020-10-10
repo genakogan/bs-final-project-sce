@@ -1,44 +1,26 @@
-import sys
-from PyQt5.QtWidgets import QMainWindow, QTextEdit, QAction, QApplication
-from PyQt5.QtGui import QIcon
-
-
-class Example(QMainWindow):
-
-    def __init__(self):
-        super().__init__()
-
-        self.initUI()
-
-
-    def initUI(self):
-
-        textEdit = QTextEdit()
-        self.setCentralWidget(textEdit)
-
-        exitAct = QAction(QIcon('exit24.png'), 'Exit', self)
-        exitAct.setShortcut('Ctrl+Q')
-        exitAct.setStatusTip('Exit application')
-        exitAct.triggered.connect(self.close)
-
-        self.statusBar()
-
-        menubar = self.menuBar()
-        fileMenu = menubar.addMenu('&File')
-        fileMenu.addAction(exitAct)
-
-    
-
-        self.setGeometry(300, 300, 350, 250)
-        self.setWindowTitle('Main window')
-        self.show()
-
-
-def main():
-    app = QApplication(sys.argv)
-    ex = Example()
-    sys.exit(app.exec_())
-
-
-if __name__ == '__main__':
-    main()
+#Create Menubar in Python GUI Application  
+import tkinter as tk  
+from tkinter import ttk  
+from tkinter import Menu  
+win = tk.Tk()  
+win.title("Python GUI App")  
+#Exit action  
+def _quit():  
+   win.quit()  
+   win.destroy()  
+   exit()  
+#Create Menu Bar  
+menuBar=Menu(win)  
+win.config(menu=menuBar)  
+#File Menu  
+fileMenu= Menu(menuBar, tearoff=0)  
+fileMenu.add_command(label="New")  
+fileMenu.add_separator()  
+fileMenu.add_command(label="Exit", command=_quit)  
+menuBar.add_cascade(label="File", menu=fileMenu)  
+#Help Menu  
+helpMenu= Menu(menuBar, tearoff=0)  
+helpMenu.add_command(label="About")  
+menuBar.add_cascade(label="Help", menu=helpMenu)  
+#Calling Main()  
+win.mainloop()

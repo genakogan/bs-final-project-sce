@@ -16,7 +16,7 @@ try:
     from os.path import isfile, join
     from tkinter import Menu
     import Segmentation as seg
-    import Paint as pnt
+    import Paint as pnt 
 except ImportError as impError:
     with open('importLog.txt', 'a') as import_log_file:
         import_log_file.write("Date - " + str(datetime.now().strftime("%d/%m/%Y %H:%M:%S")) + "\n" + str(impError) + "\n")
@@ -41,13 +41,18 @@ class Root(Tk):
         self.minsize(800, 600)
         
         self.upperMenu()
+       
         self.imageSelectPanel()
         
         # Disable resize of the window
         self.resizable(False, False)
         
-        
+   
+       
     def upperMenu(self):
+        
+        # ==================  File Menu
+        
         # Create the upper menu
         self.menu = Menu(self)
         
@@ -69,7 +74,28 @@ class Root(Tk):
         # Add exit button to File menu
         fileMenu.add_command(label='Exit', command = self.programExit,accelerator="Ctrl+Q")
         self.bind_all("<Control-q>", self.quit)
-    
+        
+        # ==================  Help Menu
+        
+        helpMenu = Menu(self.menu, tearoff=False)
+        
+        # Add the Help menu to the upper menu
+        self.menu.add_cascade(label='Help', menu=helpMenu)
+        self.config(menu=self.menu)
+        
+       
+        helpMenu.add_command(label='About', command = self.about)
+        
+        # Add separator for the Documentation button
+        helpMenu.add_separator()
+         
+        # Add Documentation button to Help menu
+        helpMenu.add_command(label='Documentation', command = self.programExit)
+        
+    def about(self):
+       filepath = word_bag_GUI.select_PDF()
+       PDF_file = open("E:/Python/Final Project/Final-Project-SCE/Segmentation/", 'GKAR')
+       read_pdf = PyPDF2.PdfFileReader(PDF_file)
     def programExit(self):
         self.destroy()
     # Exit using ctrl+Q    
