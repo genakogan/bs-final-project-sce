@@ -58,7 +58,7 @@ Install required libraries - tk, pillow, scikit-image, matplotlib. Type bellow c
 
 ```pip install matplotlib```
 
-```
+
 
 
 
