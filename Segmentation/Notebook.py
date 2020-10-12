@@ -60,10 +60,10 @@ class TextEdit(QTextEdit):
         super(TextEdit, self).insertFromMimeData(source)
 
 
-class MainWindow(QMainWindow):
+class Note(QMainWindow):
 
     def __init__(self, *args, **kwargs):
-        super(MainWindow, self).__init__(*args, **kwargs)
+        super(Note, self).__init__(*args, **kwargs)
 
         layout = QVBoxLayout()
         self.editor = TextEdit()
@@ -367,10 +367,10 @@ class MainWindow(QMainWindow):
         self.editor.setLineWrapMode( 1 if self.editor.lineWrapMode() == 0 else 0 )
 
 
-if __name__ == '__main__':
+#if __name__ == '__main__':
 
-    app = QApplication(sys.argv)
-    app.setApplicationName("Megasolid Idiom")
+    #app = QApplication(sys.argv)
+   # app.setApplicationName("Megasolid Idiom")
 
-    window = MainWindow()
-    app.exec_()
+    #window = MainWindow()
+    #app.exec_()

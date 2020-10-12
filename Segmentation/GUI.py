@@ -17,7 +17,7 @@ try:
     from tkinter import Menu
     import Segmentation as seg
     import Paint as pnt 
-    #import AboutWindow as ab
+    import Notebook as no
 except ImportError as impError:
     with open('importLog.txt', 'a') as import_log_file:
         import_log_file.write("Date - " + str(datetime.now().strftime("%d/%m/%Y %H:%M:%S")) + "\n" + str(impError) + "\n")
@@ -85,7 +85,7 @@ class Root(Tk):
         self.config(menu=self.menu)
         
        
-        helpMenu.add_command(label='About', command = self.aboutWindow)
+        helpMenu.add_command(label='Notebook', command = self.notebook)
         
         # Add separator for the Documentation button
         helpMenu.add_separator()
@@ -289,8 +289,13 @@ class Root(Tk):
         window = pnt.Window(self.currentFile,self.path)
         window.show() 
         mainloop()
-    def aboutWindow(self):
-        print("newWindow")
+    def notebook(self):
+        noteP = no.Note()
+        noteP.show()
+        mainloop()  
+        return
+        
+        
        
         
     def fileDialog(self):
