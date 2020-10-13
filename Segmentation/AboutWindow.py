@@ -7,10 +7,11 @@ class AboutW(QWidget):
         super().__init__()
 
         self.initUI()
-        self.label_1 = QLabel('Left', self)
+        self.label_1 = QLabel('   Left/n asdas /nfsdfdfdf', self)
         self.label_1.setFont(QFont('Times', 10)) 
         self.label_1.move(10,10)
         self.label_1.setStyleSheet("border: 3px solid black;") 
+        self.label_1.setGeometry(10, 10, 100, 200)
      def initUI(self):
 
         # Cancel button 
@@ -36,7 +37,7 @@ class AboutW(QWidget):
 
         self.setLayout(vbox)
 
-        self.setGeometry(300, 300, 300, 150)
+        self.setGeometry(500, 100, 300, 750)
         self.setWindowTitle('About')
        
 

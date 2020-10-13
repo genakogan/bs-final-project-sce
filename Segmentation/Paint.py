@@ -8,89 +8,22 @@ import sys
 import PIL
 
 
-qss = """
-QMenuBar {
-    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                                      stop:0 lightgray, stop:1 darkgray);
-}
-QMenuBar::item {
-    spacing: 3px;           
-    padding: 2px 10px;
-    background-color: rgb(210,105,30);
-    color: rgb(255,255,255);  
-    border-radius: 5px;
-}
-QMenuBar::item:selected {    
-    background-color: rgb(244,164,96);
-}
-QMenuBar::item:pressed {
-    background: rgb(128,0,0);
-}
 
-/* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */  
-
-QMenu {
-    background-color: #ABABAB;   
-    border: 1px solid black;
-    margin: 2px;
-}
-QMenu::item {
-    background-color: transparent;
-}
-QMenu::item:selected { 
-    background-color: #654321;
-    color: rgb(255,255,255);
-}
-"""
-
-
-qbb = """
-QMenuBar {
-    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                                      stop:0 lightgray, stop:1 darkgray);
-}
-QMenuBar::item {
-    spacing: 3px;           
-    padding: 2px 10px;
-    background-color: rgb(176, 244, 98);
-    color: rgb(255,255,255);  
-    border-radius: 5px;
-}
-QMenuBar::item:selected {    
-    background-color: rgb(176, 244, 98);
-}
-QMenuBar::item:pressed {
-    background: rgb(128,0,0);
-}
-
-/* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */  
-
-QMenu {
-    background-color: #ABABAB;   
-    border: 1px solid black;
-    margin: 2px;
-}
-QMenu::item {
-    background-color: transparent;
-}
-QMenu::item:selected { 
-    background-color: #654321;
-    color: rgb(176, 244, 98);;
-}
-"""
 # window class 
 class Window(QMainWindow):
     
-    def __init__(self, filepath,fileP): 
+    def __init__(self, fileName,fileP): 
         super().__init__() 
-
+        self.setWindowIcon(QtGui.QIcon('green.png')) 
         # setting title 
         self.setWindowTitle("Image Editor") 
        
-        self.aa=fileP
-        # Set file name and path
-        self.name = filepath
-        
+        self.filePath=fileP
+       
+        # Set file name 
+        self.name = fileName
+        self.fame = fileName
+      
         # creating image object that we will edit
         self.imageDraw = QtGui.QImage(self.name)
         
@@ -124,25 +57,12 @@ class Window(QMainWindow):
         # creating menu bar 
         mainMenu = self.menuBar() 
         self.change = False
-        
+         
        
         
         # creating file menu for save and clear action 
         fileMenu = mainMenu.addMenu("File")
-        fileMenu.setStyleSheet(
-            """
-            QMenu
-            {
-                font: 18pt;
-                background-color: purple;
-            }
-
-            QMenu::item:selected
-            {
-                background-color: green
-            }
-            """
-            )
+       
         # creating edit menu for undo and redo
         editMenu = mainMenu.addMenu("Edit") 
   
@@ -167,7 +87,7 @@ class Window(QMainWindow):
         
         saveAsAction = QAction("Save As", self) 
         # adding short cut for save action 
-        saveAsAction.setShortcut("Ctrl+Alt+S")
+        saveAsAction.setShortcut("Ctrl+Shift+S")
         # adding save to the file menu 
         fileMenu.addAction(saveAsAction) 
         
@@ -182,17 +102,12 @@ class Window(QMainWindow):
         fileMenu.addAction(clearAction) 
         # adding action to the clear 
         clearAction.triggered.connect(self.clear) 
-  
     
         exitAct = QAction('Exit', self)
         exitAct.setShortcut('Ctrl+Q')
         exitAct.triggered.connect(self.close)
         fileMenu.addAction(exitAct)
-    
-  
-    
-  
-    
+
   
         # creating undo action
         self.undoAction=QAction("Undo",self)
@@ -203,7 +118,7 @@ class Window(QMainWindow):
         
         # creating redo action
         self.redoAction=QAction("Redo",self)
-        self.redoAction.setShortcut("Ctrl+Y")
+        self.redoAction.setShortcut("Ctrl+Shift+Z")
         editMenu.addAction(self.redoAction)
         self.redoAction.triggered.connect(self.redo)
         self.redoAction.setDisabled(True)
@@ -254,7 +169,7 @@ class Window(QMainWindow):
         
     # method for checking mouse cicks 
     def mousePressEvent(self, event): 
-        
+        self.setWindowIcon(QtGui.QIcon('red.png')) 
         # Get windows size in order to scale drawing
         winSize = self.size()
         imgSize = self.imageDraw.size()
@@ -336,14 +251,16 @@ class Window(QMainWindow):
         
         # Draw the image on the canvas
         canvasPainter.drawImage(self.rect(), self.imageDraw, self.imageDraw.rect())
-
+        
     # method for saving canvas "save"
-    def save(self):        
+    def save(self):  
+        self.setWindowIcon(QtGui.QIcon('green.png'))
         # Path is correct save the image to the path
-        self.imageDraw.save(self.aa+"/"+self.name) 
-        App.setStyleSheet(qss)
+        self.imageDraw.save(self.filePath+"/"+self.name) 
+      
     # method for saving canvas "save as"
     def saveAs(self):
+        self.setWindowIcon(QtGui.QIcon('green.png'))
         # Set file path
         filePath, _ = QFileDialog.getSaveFileName(self, "Save Image", self.name, 
                           "PNG(*.png);;JPEG(*.jpg *.jpeg);;All Files(*.*) ") 
@@ -354,12 +271,12 @@ class Window(QMainWindow):
         
         # Path is correct save the image to the path
         self.imageDraw.save(filePath)
-  
+   
     # method for clearing every thing on canvas 
     def clear(self): 
-        App.setStyleSheet(qbb)
+        
         # make the whole canvas white 
-        self.imageDraw = QtGui.QImage(self.name)
+        self.imageDraw = QtGui.QImage(self.undoDraw[0])
         
         # Clear undo and redo arrays
         self.undoDraw.clear()
@@ -374,6 +291,7 @@ class Window(QMainWindow):
         
     # Undo method
     def undo(self):
+        self.setWindowIcon(QtGui.QIcon('red.png'))
         # Backup current version for redo
         self.redoDraw.append(self.imageDraw.copy())
         
@@ -393,6 +311,7 @@ class Window(QMainWindow):
         
     # Redo method
     def redo(self):
+        self.setWindowIcon(QtGui.QIcon('red.png'))
         # Backup current version for undo
         self.undoDraw.append(self.imageDraw.copy())
         
