@@ -118,7 +118,7 @@ class Window(QMainWindow):
         
         # creating redo action
         self.redoAction=QAction("Redo",self)
-        self.redoAction.setShortcut("Ctrl+Shift+Z")
+        self.redoAction.setShortcut("Ctrl+Y")
         editMenu.addAction(self.redoAction)
         self.redoAction.triggered.connect(self.redo)
         self.redoAction.setDisabled(True)
