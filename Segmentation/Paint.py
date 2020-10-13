@@ -15,7 +15,7 @@ class Window(QMainWindow):
 
         # setting title 
         self.setWindowTitle("Image Editor") 
-        print(fileP)
+       
         self.aa=fileP
         # Set file name and path
         self.name = filepath
@@ -69,19 +69,24 @@ class Window(QMainWindow):
         b_color = mainMenu.addMenu("Brush Color")      
         
         # creating save action 
+        
         saveAction = QAction("Save", self) 
+              
         # adding short cut for save action 
         saveAction.setShortcut("Ctrl+S") 
+        
         # adding save to the file menu 
         fileMenu.addAction(saveAction) 
+        
         # adding action to the save 
         saveAction.triggered.connect(self.save) 
         
-        saveAsAction = QAction("Save", self) 
+        saveAsAction = QAction("Save As", self) 
         # adding short cut for save action 
-        saveAsAction.setShortcut("Ctrl+Alt+S") 
+        saveAsAction.setShortcut("Ctrl+Alt+S")
         # adding save to the file menu 
         fileMenu.addAction(saveAsAction) 
+        
         # adding action to the save 
         saveAsAction.triggered.connect(self.saveAs) 
   

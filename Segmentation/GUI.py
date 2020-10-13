@@ -18,6 +18,8 @@ try:
     import Segmentation as seg
     import Paint as pnt 
     import Notebook as no
+    import AboutWindow as ab
+    import webbrowser
 except ImportError as impError:
     with open('importLog.txt', 'a') as import_log_file:
         import_log_file.write("Date - " + str(datetime.now().strftime("%d/%m/%Y %H:%M:%S")) + "\n" + str(impError) + "\n")
@@ -87,15 +89,22 @@ class Root(Tk):
        
         helpMenu.add_command(label='Notebook', command = self.notebook)
         
+        # Add separator for the Notebook button
+        helpMenu.add_separator()
+        
+        
+        helpMenu.add_command(label='About', command = self.about)
+        
         # Add separator for the Documentation button
         helpMenu.add_separator()
          
         # Add Documentation button to Help menu
-        helpMenu.add_command(label='Documentation', command = self.programExit)
+        helpMenu.add_command(label='Documentation', command = self.documentation)
         
-    
-       
-       
+    # Open Documentaion file
+    def documentation(self):
+        webbrowser.open('E:/Python/Final Project/Final-Project-SCE/Segmentation/GKAR.pdf', new=2)
+      
     def programExit(self):
         self.destroy()
     # Exit using ctrl+Q    
@@ -292,8 +301,13 @@ class Root(Tk):
     def notebook(self):
         noteP = no.Note()
         noteP.show()
-        mainloop()  
-        return
+        mainloop() 
+        
+    def about(self):
+        aboutW = ab.AboutW()
+        aboutW.show()
+        mainloop() 
+       
         
         
        
