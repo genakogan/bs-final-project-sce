@@ -102,11 +102,16 @@ class Window(QMainWindow):
         fileMenu.addAction(clearAction) 
         # adding action to the clear 
         clearAction.triggered.connect(self.clear) 
-    
+
+        # creating exit action     
         exitAct = QAction('Exit', self)
+        # adding short cut to the exit action
         exitAct.setShortcut('Ctrl+Q')
-        exitAct.triggered.connect(self.close)
+        # adding exit to the file menu 
         fileMenu.addAction(exitAct)
+        # adding action to the exit 
+        exitAct.triggered.connect(self.close)
+        
 
   
         # creating undo action
