@@ -20,8 +20,9 @@ try:
     import Notebook as no
     import AboutWindow as ab
     import webbrowser
+    import os
 except ImportError as impError:
-    with open('importLog.txt', 'a') as import_log_file:
+    with open('./Logs/Imports.log', 'a') as import_log_file:
         import_log_file.write("Date - " + str(datetime.now().strftime("%d/%m/%Y %H:%M:%S")) + "\n" + str(impError) + "\n")
     sys.exit()
     
@@ -34,6 +35,8 @@ ZOOM_IN_SCALE           = 1.1     # Zoom in scale size
 ZOOM_OUT_SCALE          = 0.9     # Zoom out scale size
 MIN_DISPLAY_SIZE_WIDTH  = 400     # Minimum size in pixel of displayed image of width
 MIN_DISPLAY_SIZE_HEIGHT = 400     # Minimum size in pixel of displayed image of height
+PROGRAM_PATH            = os.getcwd()
+DOCUMENTATION_FILE      = PROGRAM_PATH + '/Documentation/GKAR.pdf'
 
 # Code segment
 
@@ -101,10 +104,6 @@ class Root(Tk):
         # Add Documentation button to Help menu
         helpMenu.add_command(label='Documentation', command = self.documentation)
         
-    # Open Documentaion file
-    def documentation(self):
-        webbrowser.open('E:/Python/Final Project/Final-Project-SCE/Segmentation/GKAR.pdf', new=2)
-      
     def programExit(self):
         self.destroy()
     # Exit using ctrl+Q    
@@ -140,7 +139,12 @@ class Root(Tk):
     def openImage(self,event): 
         cs = self.lbFiles.curselection() 
         all_items = self.lbFiles.get(0, 'end')
+        
+        # Set the current file with path
         self.currentFile = all_items[cs[0]]
+        
+        # Set file with its path
+        fileWithPath = self.path + '/' +  self.currentFile
         
         try:
             # Create frame for image
@@ -158,7 +162,7 @@ class Root(Tk):
             self.imgCanvas.grid(column = 0, row = 0, padx=120, sticky='n', columnspan=100)
             
             # Prepare the image with first segmentation
-            self.img = seg.imageConfigSegment(self.currentFile)()
+            self.img = seg.imageConfigSegment(fileWithPath)()
             self.img = self.img.resize((MIN_DISPLAY_SIZE_WIDTH, MIN_DISPLAY_SIZE_HEIGHT), Image.ANTIALIAS)
             
             # Put photo as attribute in order to prevent garbage collection
@@ -255,7 +259,7 @@ class Root(Tk):
         
     def previewSegmentation(self):
         # Get parameters for the image
-        currentFile = self.currentFile
+        currentFile = self.path + '/' + self.currentFile
         threshold = self.threshold.get()
         minSizeVal = self.minSizeVal.get()
         areaVal = self.areaVal.get()
@@ -295,9 +299,10 @@ class Root(Tk):
     
     # Function for button edit image
     def editImage(self):
-        window = pnt.Window(self.currentFile,self.path)
+        window = pnt.Window(self.currentFile, self.path)
         window.show() 
         mainloop()
+        
     def notebook(self):
         noteP = no.Note()
         noteP.show()
@@ -306,16 +311,17 @@ class Root(Tk):
     def about(self):
         aboutW = ab.AboutW()
         aboutW.show()
-        mainloop() 
+        mainloop()
+    
+    # Open Documentaion file
+    def documentation(self):
+        webbrowser.open(DOCUMENTATION_FILE, new=2)     
        
-        
-        
-       
-        
     def fileDialog(self):
 
         # Browse for directory of images
         self.path = filedialog.askdirectory()
+        
         # Check if path was selected open all images in path
         if self.path != '':
             self.lbFiles.delete(0,'end')

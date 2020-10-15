@@ -7,6 +7,9 @@ from PyQt5.QtCore import *
 import sys 
 import PIL
 
+# Constant Definition
+GREEN_ICON  = './Images/green.png'
+RED_ICON    = './Images/red.png'
 
 
 # window class 
@@ -14,18 +17,20 @@ class Window(QMainWindow):
     
     def __init__(self, fileName,fileP): 
         super().__init__() 
-        self.setWindowIcon(QtGui.QIcon('green.png')) 
+        self.setWindowIcon(QtGui.QIcon(GREEN_ICON)) 
+        
         # setting title 
         self.setWindowTitle("Image Editor") 
        
+        # Set file path
         self.filePath=fileP
        
         # Set file name 
         self.name = fileName
-        self.fame = fileName
+        #self.fame = fileName
       
         # creating image object that we will edit
-        self.imageDraw = QtGui.QImage(self.name)
+        self.imageDraw = QtGui.QImage(self.filePath + '/' + self.name)
         
         # Array of undo and redo drawings
         self.undoDraw = []
@@ -174,7 +179,7 @@ class Window(QMainWindow):
         
     # method for checking mouse cicks 
     def mousePressEvent(self, event): 
-        self.setWindowIcon(QtGui.QIcon('red.png')) 
+        self.setWindowIcon(QtGui.QIcon(RED_ICON)) 
         # Get windows size in order to scale drawing
         winSize = self.size()
         imgSize = self.imageDraw.size()
@@ -259,15 +264,17 @@ class Window(QMainWindow):
         
     # method for saving canvas "save"
     def save(self):  
-        self.setWindowIcon(QtGui.QIcon('green.png'))
+        # Set icon as saved file
+        self.setWindowIcon(QtGui.QIcon(GREEN_ICON))
+        
         # Path is correct save the image to the path
-        self.imageDraw.save(self.filePath+"/"+self.name) 
+        self.imageDraw.save(self.filePath + "/" + self.name) 
       
     # method for saving canvas "save as"
     def saveAs(self):
-        self.setWindowIcon(QtGui.QIcon('green.png'))
+        self.setWindowIcon(QtGui.QIcon(GREEN_ICON))
         # Set file path
-        filePath, _ = QFileDialog.getSaveFileName(self, "Save Image", self.name, 
+        filePath, _ = QFileDialog.getSaveFileName(self, "Save Image", self.filePath + '/' + self.name, 
                           "PNG(*.png);;JPEG(*.jpg *.jpeg);;All Files(*.*) ") 
        
         # If path is empty then wrong path - don't save the image
@@ -280,7 +287,7 @@ class Window(QMainWindow):
     # method for clearing every thing on canvas 
     def clear(self): 
         
-        # make the whole canvas white 
+        # clear all changes on the image
         self.imageDraw = QtGui.QImage(self.undoDraw[0])
         
         # Clear undo and redo arrays
@@ -296,7 +303,7 @@ class Window(QMainWindow):
         
     # Undo method
     def undo(self):
-        self.setWindowIcon(QtGui.QIcon('red.png'))
+        self.setWindowIcon(QtGui.QIcon(RED_ICON))
         # Backup current version for redo
         self.redoDraw.append(self.imageDraw.copy())
         
@@ -316,7 +323,7 @@ class Window(QMainWindow):
         
     # Redo method
     def redo(self):
-        self.setWindowIcon(QtGui.QIcon('red.png'))
+        self.setWindowIcon(QtGui.QIcon(RED_ICON))
         # Backup current version for undo
         self.undoDraw.append(self.imageDraw.copy())
         
@@ -357,10 +364,4 @@ class Window(QMainWindow):
     def redColor(self): 
         self.brushColor = Qt.red 
   
-    
-  
-
-        #self.setGeometry(300, 300, 300, 200)
-       # self.setWindowTitle('Toolbar')
-        #self.show()# create pyqt5 app 
 App = QApplication(sys.argv)
