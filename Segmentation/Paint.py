@@ -8,16 +8,23 @@ import sys
 import PIL
 
 # Constant Definition
-GREEN_ICON  = './Images/green.png'
-RED_ICON    = './Images/red.png'
+SAVED_ICON      = './Images/saved.png'
+UNSAVED_ICON    = './Images/unsaved.png'
 
+# Global Variables
+savedImageFlag = False
 
 # window class 
 class Window(QMainWindow):
     
     def __init__(self, fileName,fileP): 
         super().__init__() 
-        self.setWindowIcon(QtGui.QIcon(GREEN_ICON)) 
+        
+        # Set saved image flag as global varible
+        global savedImageFlag
+        
+        # Set window icon as saved image
+        self.setWindowIcon(QtGui.QIcon(SAVED_ICON)) 
         
         # setting title 
         self.setWindowTitle("Image Editor") 
@@ -27,8 +34,10 @@ class Window(QMainWindow):
        
         # Set file name 
         self.name = fileName
-        #self.fame = fileName
-      
+        
+        # Reset saved image flag
+        savedImageFlag = False
+        
         # creating image object that we will edit
         self.imageDraw = QtGui.QImage(self.filePath + '/' + self.name)
         
@@ -63,8 +72,6 @@ class Window(QMainWindow):
         mainMenu = self.menuBar() 
         self.change = False
          
-       
-        
         # creating file menu for save and clear action 
         fileMenu = mainMenu.addMenu("File")
        
@@ -78,7 +85,6 @@ class Window(QMainWindow):
         b_color = mainMenu.addMenu("Brush Color")      
         
         # creating save action 
-        
         saveAction = QAction("Save", self) 
               
         # adding short cut for save action 
@@ -101,24 +107,28 @@ class Window(QMainWindow):
   
         # creating clear action 
         clearAction = QAction("Clear", self) 
+        
         # adding short cut to the clear action 
         clearAction.setShortcut("Ctrl+c") 
+        
         # adding clear to the file menu 
         fileMenu.addAction(clearAction) 
+        
         # adding action to the clear 
         clearAction.triggered.connect(self.clear) 
 
         # creating exit action     
         exitAct = QAction('Exit', self)
+        
         # adding short cut to the exit action
         exitAct.setShortcut('Ctrl+Q')
+        
         # adding exit to the file menu 
         fileMenu.addAction(exitAct)
+        
         # adding action to the exit 
         exitAct.triggered.connect(self.close)
         
-
-  
         # creating undo action
         self.undoAction=QAction("Undo",self)
         self.undoAction.setShortcut("Ctrl+Z")
@@ -136,8 +146,10 @@ class Window(QMainWindow):
         # creating options for brush sizes 
         # creating action for selecting pixel of 4px 
         pix_4 = QAction("4px", self) 
+        
         # adding this action to the brush size 
-        b_size.addAction(pix_4) 
+        b_size.addAction(pix_4)
+        
         # adding method to this 
         pix_4.triggered.connect(self.Pixel_4) 
   
@@ -162,24 +174,23 @@ class Window(QMainWindow):
         b_color.addAction(black) 
         
         # adding methods to the black 
-        black.triggered.connect(self.blackColor) 
+        black.triggered.connect(self.blackColor)
   
         # similarly repeating above steps for different color 
-        white = QAction("White", self) 
+        white = QAction("White", self)
         b_color.addAction(white) 
-        white.triggered.connect(self.whiteColor) 
+        white.triggered.connect(self.whiteColor)
         
         # Create red pen
         red = QAction("Red", self) 
         b_color.addAction(red) 
-        red.triggered.connect(self.redColor) 
-        
-        
-        
+        red.triggered.connect(self.redColor)
         
     # method for checking mouse cicks 
-    def mousePressEvent(self, event): 
-        self.setWindowIcon(QtGui.QIcon(RED_ICON)) 
+    def mousePressEvent(self, event):
+        # Set icon of the windows as unsaved image
+        self.setWindowIcon(QtGui.QIcon(UNSAVED_ICON)) 
+        
         # Get windows size in order to scale drawing
         winSize = self.size()
         imgSize = self.imageDraw.size()
@@ -205,20 +216,13 @@ class Window(QMainWindow):
             # Scale the point according to screen size
             self.lastPoint = scaledPoint
         
-        
     def mouseMoveEvent(self, event):
         # If moveing the mose
         if event.buttons() and QtCore.Qt.LeftButton and self.drawing:
             painter = QtGui.QPainter(self.imageDraw)
             painter.setPen(QtGui.QPen(self.brushColor, self.brushSize, QtCore.Qt.SolidLine, QtCore.Qt.RoundCap, QtCore.Qt.RoundJoin))
             if not self.change:
-                """r = QtCore.QRect(QtCore.QPoint(), self._clear_size*QtCore.QSize())
-                r.moveCenter(event.pos())
-                painter.save()
-                painter.setCompositionMode(QtGui.QPainter.CompositionMode_Clear)
-                painter.eraseRect(r)
-                painter.restore()"""
-            #else:
+
                 # Scale the point according to windows size
                 newX = event.x() / self.scale_x
                 newY = event.y() / self.scale_y
@@ -261,18 +265,60 @@ class Window(QMainWindow):
         
         # Draw the image on the canvas
         canvasPainter.drawImage(self.rect(), self.imageDraw, self.imageDraw.rect())
+    
+    # The function saves the image into the selected path and name
+    def saveFileOperation(self, path):
+        # Set saved image flag as global varible
+        global savedImageFlag
         
-    # method for saving canvas "save"
-    def save(self):  
-        # Set icon as saved file
-        self.setWindowIcon(QtGui.QIcon(GREEN_ICON))
+        # save the image into the selected path
+        saveStatus = self.imageDraw.save(path)
         
-        # Path is correct save the image to the path
-        self.imageDraw.save(self.filePath + "/" + self.name) 
+        # Check if file saved
+        if (saveStatus):
+            # Set image has been saved
+            savedImageFlag = True
+            
+            # Set icon as saved file
+            self.setWindowIcon(QtGui.QIcon(SAVED_ICON))
+            
+        else:
+            # Raise popup about wrong path
+            messagebox.showerror(title="Error", message="Wrong path was selected try again!")
+        
+    # method for "save" option from file menu
+    def save(self):
+        # Create the path with file name to save
+        strPath = self.filePath + "/" + self.name
+        
+        # Save the file
+        self.saveFileOperation(strPath)
+        """# Set saved image flag as global varible
+        global savedImageFlag
+        
+        # Path is correct save the image to the path and save result
+        saveStatus = self.imageDraw.save(self.filePath + "/" + self.name)
+        
+        # Check if file saved
+        if (saveStatus):
+            # Set image has been saved
+            savedImageFlag = True
+            
+            # Set icon as saved file
+            self.setWindowIcon(QtGui.QIcon(SAVED_ICON))
+            
+        else:
+            # Raise popup about wrong path
+            messagebox.showerror(title="Error", message="Wrong path was selected try again!")
+         """ 
+        
       
     # method for saving canvas "save as"
     def saveAs(self):
-        self.setWindowIcon(QtGui.QIcon(GREEN_ICON))
+        # Set saved image flag as global varible
+        global savedImageFlag
+        
+        self.setWindowIcon(QtGui.QIcon(SAVED_ICON))
         # Set file path
         filePath, _ = QFileDialog.getSaveFileName(self, "Save Image", self.filePath + '/' + self.name, 
                           "PNG(*.png);;JPEG(*.jpg *.jpeg);;All Files(*.*) ") 
@@ -303,7 +349,7 @@ class Window(QMainWindow):
         
     # Undo method
     def undo(self):
-        self.setWindowIcon(QtGui.QIcon(RED_ICON))
+        self.setWindowIcon(QtGui.QIcon(UNSAVED_ICON))
         # Backup current version for redo
         self.redoDraw.append(self.imageDraw.copy())
         
@@ -323,7 +369,7 @@ class Window(QMainWindow):
         
     # Redo method
     def redo(self):
-        self.setWindowIcon(QtGui.QIcon(RED_ICON))
+        self.setWindowIcon(QtGui.QIcon(UNSAVED_ICON))
         # Backup current version for undo
         self.undoDraw.append(self.imageDraw.copy())
         
@@ -362,6 +408,6 @@ class Window(QMainWindow):
         self.brushColor = Qt.white 
     
     def redColor(self): 
-        self.brushColor = Qt.red 
+        self.brushColor = Qt.red
   
-App = QApplication(sys.argv)
+paintApp = QApplication(sys.argv)

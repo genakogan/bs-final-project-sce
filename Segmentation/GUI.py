@@ -21,11 +21,11 @@ try:
     import AboutWindow as ab
     import webbrowser
     import os
+    import gc
 except ImportError as impError:
     with open('./Logs/Imports.log', 'a') as import_log_file:
         import_log_file.write("Date - " + str(datetime.now().strftime("%d/%m/%Y %H:%M:%S")) + "\n" + str(impError) + "\n")
-    sys.exit()
-    
+    sys.exit()  
 
 # Constant variable definition
 DEFAULT_THRESHOLD       = 0.6     # Default threshold value
@@ -51,9 +51,7 @@ class Root(Tk):
         self.imageSelectPanel()
         
         # Disable resize of the window
-        self.resizable(False, False)
-        
-   
+        self.resizable(False, False)   
        
     def upperMenu(self):
         
@@ -70,8 +68,6 @@ class Root(Tk):
         
         # Add separator for the exit button
         fileMenu.add_separator()
-        
-        
         
         # Add the file menu to the upper menu
         self.menu.add_cascade(label='File', menu=fileMenu)
@@ -169,7 +165,8 @@ class Root(Tk):
             self.photo = ImageTk.PhotoImage(self.img)
             
             # put image on canvas pic's upper left corner (NW) on the canvas
-            self.imgCanvas.create_image((self.imgCanvas.winfo_width() / 2, self.imgCanvas.winfo_height() / 2), image=self.photo)
+            #self.imgCanvas.create_image((self.imgCanvas.winfo_width() / 2, self.imgCanvas.winfo_height() / 2), image=self.photo)
+            self.imgCanvas.create_image((0,0), image=self.photo, anchor=NW)
             
             # Configure scroll area for image
             self.imgCanvas.configure(scrollregion = self.imgCanvas.bbox("all"))
@@ -275,6 +272,7 @@ class Root(Tk):
             
             # put image on canvas pic's upper left corner (NW) on the canvas
             self.imgCanvas.create_image((0,0), image=self.photo, anchor=NW)
+            
         except ValueError:
             messagebox.showerror(title="Error", message="Wrong threshold values selected!")
 
@@ -300,17 +298,25 @@ class Root(Tk):
     # Function for button edit image
     def editImage(self):
         window = pnt.Window(self.currentFile, self.path)
-        window.show() 
-        mainloop()
+        window.show()
+        
+        # Prevent garbage collector cleaning the memory and closing the window
+        pnt.paintApp.exec_()
+        
+        # Check if image saved
+        if (pnt.savedImageFlag):
+            # Reload the image
+            self.previewSegmentation()
         
     def notebook(self):
         noteP = no.Note()
         noteP.show()
-        mainloop() 
         
     def about(self):
         aboutW = ab.AboutW()
         aboutW.show()
+        
+        # Prevent garbage collector cleaning the memory and closing the window
         mainloop()
     
     # Open Documentaion file
