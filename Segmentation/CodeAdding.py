@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 qss = """
 QMenuBar {
     background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
@@ -67,5 +68,5 @@ QMenu::item:selected {
     background-color: #654321;
     color: rgb(176, 244, 98);;
 }
-"""# -*- coding: utf-8 -*-
+"""
 
