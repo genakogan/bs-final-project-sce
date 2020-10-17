@@ -12,8 +12,7 @@ SAVED_ICON      = './Images/saved.png'
 UNSAVED_ICON    = './Images/unsaved.png'
 
 # Global Variables
-savedImageFlag      = False
-savedAsImageFlag    = False
+savedImageFlag = False
 
 # window class 
 class Window(QMainWindow):
@@ -23,7 +22,6 @@ class Window(QMainWindow):
         
         # Set saved image flag as global varible
         global savedImageFlag
-        global savedAsImageFlag
         
         # Set window icon as saved image
         self.setWindowIcon(QtGui.QIcon(SAVED_ICON)) 
@@ -39,7 +37,6 @@ class Window(QMainWindow):
         
         # Reset saved image flag
         savedImageFlag = False
-        savedAsImageFlag = False
         
         # creating image object that we will edit
         self.imageDraw = QtGui.QImage(self.filePath + '/' + self.name)
@@ -318,34 +315,24 @@ class Window(QMainWindow):
       
     # method for saving canvas "save as"
     def saveAs(self):
-        # Set saved as image flag as global varible
-        global savedAsImageFlag
+        # Set saved image flag as global varible
+        global savedImageFlag
         
-        #self.setWindowIcon(QtGui.QIcon(SAVED_ICON))
+        self.setWindowIcon(QtGui.QIcon(SAVED_ICON))
         # Set file path
         filePath, _ = QFileDialog.getSaveFileName(self, "Save Image", self.filePath + '/' + self.name, 
                           "PNG(*.png);;JPEG(*.jpg *.jpeg);;All Files(*.*) ") 
        
         # If path is empty then wrong path - don't save the image
-        #if ( filePath == "" ): 
-        #    return
+        if ( filePath == "" ): 
+            return
         
         # Path is correct save the image to the path
-        #self.imageDraw.save(filePath)
-        
-        # Save the image
-        self.saveFileOperation(filePath)
-        
-        # Check if image saved successfully
-        if (savedImageFlag):
-            # Set saved as flag as true
-            savedAsImageFlag = True
+        self.imageDraw.save(filePath)
    
     # method for clearing every thing on canvas 
     def clear(self): 
-        # Change the icon for unsaved image
         self.setWindowIcon(QtGui.QIcon(UNSAVED_ICON))
-        
         # clear all changes on the image
         self.imageDraw = QtGui.QImage(self.undoDraw[0])
         
@@ -424,4 +411,3 @@ class Window(QMainWindow):
         self.brushColor = Qt.red
   
 paintApp = QApplication(sys.argv)
-#

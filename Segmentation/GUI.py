@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Sep  3 17:29:23 2020
-
 @author: Aviel-PC
 """
 
@@ -253,7 +252,7 @@ class Root(Tk):
         
     def move_move(self, event):
         self.imgCanvas.scan_dragto(event.x, event.y, gain=1)
-    
+        
     def previewSegmentation(self):
         # Get parameters for the image
         currentFile = self.path + '/' + self.currentFile
@@ -340,4 +339,3 @@ if __name__ == "__main__":
     # Run the main GUI
     root = Root()
     root.mainloop()
-
