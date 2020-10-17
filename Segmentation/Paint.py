@@ -6,14 +6,20 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import * 
 import sys 
 import PIL
+import os
 
 # Constant Definition
-SAVED_ICON      = './Images/saved.png'
-UNSAVED_ICON    = './Images/unsaved.png'
+SAVED_ICON                  = './Images/saved.png'
+UNSAVED_ICON                = './Images/unsaved.png'
+SAVED_DIFF_PATH             = 0
+SAVED_SAME_PATH_DIFF_NAME   = 1
+SAVED_SAME_PATH_AND_NAME    = 2
 
 # Global Variables
 savedImageFlag      = False
 savedAsImageFlag    = False
+savedAsPath         = SAVED_SAME_PATH_AND_NAME
+savedAsFileName     = ""
 
 # window class 
 class Window(QMainWindow):
@@ -21,9 +27,10 @@ class Window(QMainWindow):
     def __init__(self, fileName,fileP): 
         super().__init__() 
         
-        # Set saved image flag as global varible
+        # Set global variables
         global savedImageFlag
         global savedAsImageFlag
+        global savedAsFileName
         
         # Set window icon as saved image
         self.setWindowIcon(QtGui.QIcon(SAVED_ICON)) 
@@ -36,6 +43,9 @@ class Window(QMainWindow):
        
         # Set file name 
         self.name = fileName
+        
+        # Reset saved file name
+        savedAsFileName = ""
         
         # Reset saved image flag
         savedImageFlag = False
@@ -318,20 +328,14 @@ class Window(QMainWindow):
       
     # method for saving canvas "save as"
     def saveAs(self):
-        # Set saved as image flag as global varible
+        # Set global variables
         global savedAsImageFlag
+        global savedAsPath
+        global savedAsFileName
         
-        #self.setWindowIcon(QtGui.QIcon(SAVED_ICON))
         # Set file path
         filePath, _ = QFileDialog.getSaveFileName(self, "Save Image", self.filePath + '/' + self.name, 
-                          "PNG(*.png);;JPEG(*.jpg *.jpeg);;All Files(*.*) ") 
-       
-        # If path is empty then wrong path - don't save the image
-        #if ( filePath == "" ): 
-        #    return
-        
-        # Path is correct save the image to the path
-        #self.imageDraw.save(filePath)
+                          "JPEG(*.jpg *.jpeg);;PNG(*.png);;TIF(*.tif *.tiff);;All Files(*.*) ") 
         
         # Save the image
         self.saveFileOperation(filePath)
@@ -340,6 +344,20 @@ class Window(QMainWindow):
         if (savedImageFlag):
             # Set saved as flag as true
             savedAsImageFlag = True
+            
+            # Get new file path and name
+            savedAsFileName = os.path.basename(filePath)
+            savedAsFilePath = os.path.dirname(filePath) 
+            
+            # Check if the file was saved in the same path
+            if (savedAsFilePath == self.filePath):
+                # Check if same file name
+                if (savedAsFileName == self.name):
+                    savedAsPath = SAVED_SAME_PATH_AND_NAME
+                else: # Diffetent name of file
+                    savedAsPath = SAVED_SAME_PATH_DIFF_NAME
+            else: # Different path
+                savedAsPath = SAVED_DIFF_PATH                
    
     # method for clearing every thing on canvas 
     def clear(self): 

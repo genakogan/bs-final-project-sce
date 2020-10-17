@@ -35,8 +35,9 @@ ZOOM_IN_SCALE           = 1.1     # Zoom in scale size
 ZOOM_OUT_SCALE          = 0.9     # Zoom out scale size
 MIN_DISPLAY_SIZE_WIDTH  = 400     # Minimum size in pixel of displayed image of width
 MIN_DISPLAY_SIZE_HEIGHT = 400     # Minimum size in pixel of displayed image of height
-PROGRAM_PATH            = os.getcwd()
-DOCUMENTATION_FILE      = PROGRAM_PATH + '/Documentation/GKAR.pdf'
+PROGRAM_PATH            = os.getcwd()   # Get path of the py files
+DOCUMENTATION_FILE      = PROGRAM_PATH + '/Documentation/GKAR.pdf'  # Get documentation file path
+ACCEPTED_EXTENSIONS     = ('jpg', 'jpeg', 'tif', 'tiff', 'png')     # Accepted file extensions
 
 # Code segment
 
@@ -286,7 +287,7 @@ class Root(Tk):
     def loadImagesInPath(self):
     
         # Load all files in directory to array - without directories
-        onlyfiles = [f for f in listdir(self.path) if isfile(join(self.path, f))]
+        onlyfiles = [f for f in listdir(self.path) if isfile(join(self.path, f)) and f.lower().endswith(ACCEPTED_EXTENSIONS)]
         
         nImgIndex = 0
         
@@ -303,8 +304,18 @@ class Root(Tk):
         # Prevent garbage collector cleaning the memory and closing the window
         pnt.paintApp.exec_()
         
-        # Check if image saved
-        if (pnt.savedImageFlag):
+        # Check if saved as image
+        if (pnt.savedAsImageFlag):
+            # Check if the file has different name and need to be added to list
+            if (pnt.savedAsPath == pnt.SAVED_SAME_PATH_DIFF_NAME):
+                # Add the new file to the file list
+                self.lbFiles.insert(self.lbFiles.size(), pnt.savedAsFileName)
+            # Same path and same name
+            elif (pnt.savedAsPath == pnt.SAVED_SAME_PATH_AND_NAME):
+                # Reload the image
+                self.previewSegmentation()
+        # Check if image saved (simple save and not saveas)
+        elif (pnt.savedImageFlag):
             # Reload the image
             self.previewSegmentation()
         
