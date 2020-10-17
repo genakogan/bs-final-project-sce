@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Sep  3 17:29:23 2020
+
 @author: Aviel-PC
 """
 
@@ -339,3 +340,4 @@ if __name__ == "__main__":
     # Run the main GUI
     root = Root()
     root.mainloop()
+

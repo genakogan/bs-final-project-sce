@@ -16,7 +16,9 @@ QMenuBar::item:selected {
 QMenuBar::item:pressed {
     background: rgb(128,0,0);
 }
+
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */  
+
 QMenu {
     background-color: #ABABAB;   
     border: 1px solid black;
@@ -50,7 +52,9 @@ QMenuBar::item:selected {
 QMenuBar::item:pressed {
     background: rgb(128,0,0);
 }
+
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */  
+
 QMenu {
     background-color: #ABABAB;   
     border: 1px solid black;
@@ -64,3 +68,4 @@ QMenu::item:selected {
     color: rgb(176, 244, 98);;
 }
 """# -*- coding: utf-8 -*-
+
