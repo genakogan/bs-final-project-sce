@@ -411,3 +411,4 @@ class Window(QMainWindow):
         self.brushColor = Qt.red
   
 paintApp = QApplication(sys.argv)
+# Test
