@@ -332,7 +332,7 @@ class Window(QMainWindow):
    
     # method for clearing every thing on canvas 
     def clear(self): 
-        
+        self.setWindowIcon(QtGui.QIcon(UNSAVED_ICON))
         # clear all changes on the image
         self.imageDraw = QtGui.QImage(self.undoDraw[0])
         
