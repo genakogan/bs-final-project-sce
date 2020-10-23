@@ -36,7 +36,7 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
     def cropContour(qContourSet, figsize):
         
         # Test image
-        data = np.zeros( (figsize[0],figsize[1],3), dtype=np.uint8 )
+        data = np.zeros((figsize[0],figsize[1],3), dtype=np.uint8)
         
         # Set white pixels
         for i in range(figsize[0]):
