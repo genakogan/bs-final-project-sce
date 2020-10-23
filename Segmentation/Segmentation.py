@@ -31,6 +31,31 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
 
         return (npCropImg)
     
+    # The function prints the contour only
+    # Remember to remove figsize after all test has been done!!!!!!!!!!!!!
+    def cropContour(qContourSet, figsize):
+        
+        # Test image
+        data = np.zeros( (figsize[0],figsize[1],3), dtype=np.uint8 )
+        
+        # Set white pixels
+        for i in range(figsize[0]):
+            for j in range(figsize[1]):
+                data[i][j] = [255,255,255]
+        
+        # Get all contour pathes (if multiple shapes)
+        pathes = qContourSet.collections[0].get_paths()  # grab the 1st path
+        for path in pathes:
+            coordinates = path.vertices
+            
+            # Run over coordinates and set red color pixel
+            for cord in coordinates:
+                data[int(cord[1])][int(cord[0])] = [254,0,0]
+        
+        # Show reuslt image
+        image = Image.fromarray(data)
+        image.show()
+    
     # The function Performs the segmentation
     def perform_segmentation():
         # Open the image as basic image
@@ -76,7 +101,12 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
         fig = plt.figure(figsize = figsize)
         ax = fig.add_axes([0, 0, 1, 1])
         ax.imshow(segmentation.mark_boundaries(img, m_slic), interpolation='nearest')
-        ax.contour(mask, colors='red', linewidths=0.5)
+        
+        # Create bone contour and save contour lines in contLines
+        contLines = ax.contour(mask, colors='red', linewidths=0.5)
+        
+        # Get the image contour only
+        cropContour(contLines, (width, height))
         
         # Disable axises in the result image
         plt.axis('off')
