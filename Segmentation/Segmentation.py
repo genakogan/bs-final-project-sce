@@ -57,12 +57,9 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
         image.show()
     
     # The function Performs the segmentation
-    def perform_segmentation():
+    def perform_segmentation(save = 0):
         # Open the image as basic image
         im = Image.open(path)
-        
-        # Open the image as numpy array
-        #img = plt.imread(path)
         
         # Convert the image to numpy array
         img = np.array(im)
@@ -88,7 +85,7 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
         mask = morphology.opening(mask, morphology.disk(1))
 
         # Remove some holes in the object - Dilation
-        mask = morphology.closing(mask, morphology.disk(3))
+        mask = morphology.closing(mask, morphology.disk(1))
 
         # SLIC result
         slic = segmentation.slic(img, n_segments=1, start_label=1)
@@ -106,7 +103,7 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
         contLines = ax.contour(mask, colors='red', linewidths=0.5)
         
         # Get the image contour only
-        cropContour(contLines, (width, height))
+        #cropContour(contLines, (width, height))
         
         # Disable axises in the result image
         plt.axis('off')

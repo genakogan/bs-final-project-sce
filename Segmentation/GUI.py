@@ -31,10 +31,15 @@ except ImportError as impError:
 DEFAULT_THRESHOLD       = 0.6     # Default threshold value
 DEFAULT_MIN_SIZE        = 1000    # Default min size of object for segmentation
 DEFAULT_AREA_SIZE       = 1000    # Default area threshold for segmentation
+THRESHOLD_RESOLUTION    = 0.0005  # Increment resolution for threshold
 ZOOM_IN_SCALE           = 1.1     # Zoom in scale size
 ZOOM_OUT_SCALE          = 0.9     # Zoom out scale size
 MIN_DISPLAY_SIZE_WIDTH  = 400     # Minimum size in pixel of displayed image of width
 MIN_DISPLAY_SIZE_HEIGHT = 400     # Minimum size in pixel of displayed image of height
+SEGMENT_FUNC_INDX       = 0       # Index for segmentation function in the list inside dictionary of files
+THRESHOLD_INDX          = 1       # Index for threshold in the list inside dictionary of files
+MIN_SIZE_INDX           = 2       # Index for min size in the list inside dictionary of files
+AREA_SIZE_INDX          = 3       # Index for area size in the list inside dictionary of files
 PROGRAM_PATH            = os.getcwd()   # Get path of the py files
 DOCUMENTATION_FILE      = PROGRAM_PATH + '/Documentation/GKAR.pdf'  # Get documentation file path
 ACCEPTED_EXTENSIONS     = ('jpg', 'jpeg', 'tif', 'tiff', 'png')     # Accepted file extensions
@@ -103,6 +108,7 @@ class Root(Tk):
         
     def programExit(self):
         self.destroy()
+        
     # Exit using ctrl+Q    
     def quit(self, event):
         self.destroy()
@@ -137,86 +143,89 @@ class Root(Tk):
         cs = self.lbFiles.curselection() 
         all_items = self.lbFiles.get(0, 'end')
         
-        # Set the current file with path
-        self.currentFile = all_items[cs[0]]
-        
-        # Set file with its path
-        fileWithPath = self.path + '/' +  self.currentFile
-        
-        try:
-            # Create frame for image
-            self.frameImage = Frame(self)
-            self.frameImage.grid(column = 2, row = 0, sticky='nsew')
+        # Check if files exists
+        if (len(all_items) == 0):
+            # Prints error message - no file selected
+            messagebox.showerror(title="Error", message="No file was selected!")
+        else:
+            # Set the current file with path
+            self.currentFile = all_items[cs[0]]
             
-             # Create frame for sliders
-            self.frameSliders = Frame(self)
-            self.frameSliders.grid(column = 2, row = 1, sticky='nsew')
-            
-            # Create canvas for image
-            self.imgCanvas = Canvas(self.frameImage, width = 500, height = 500)
-            
-            # Place the image canvas in the correct location in the window
-            self.imgCanvas.grid(column = 0, row = 0, padx=120, sticky='n', columnspan=100)
-            
-            # Prepare the image with first segmentation
-            self.img = seg.imageConfigSegment(fileWithPath)()
-            self.img = self.img.resize((MIN_DISPLAY_SIZE_WIDTH, MIN_DISPLAY_SIZE_HEIGHT), Image.ANTIALIAS)
-            
-            # Put photo as attribute in order to prevent garbage collection
-            self.photo = ImageTk.PhotoImage(self.img)
-            
-            # put image on canvas pic's upper left corner (NW) on the canvas
-            #self.imgCanvas.create_image((self.imgCanvas.winfo_width() / 2, self.imgCanvas.winfo_height() / 2), image=self.photo)
-            self.imgCanvas.create_image((0,0), image=self.photo, anchor=NW)
-            
-            # Configure scroll area for image
-            self.imgCanvas.configure(scrollregion = self.imgCanvas.bbox("all"))
-            
-            # Add sliders for segmentation options:
-            self.thresholdLbl = Label(self.frameImage, text="Threshold:").grid(row=1,padx=20, sticky=W)
-            self.threshold = Scale(self.frameImage, from_=0, to=1, resolution = 0.005, orient=HORIZONTAL)
-            self.threshold.set(DEFAULT_THRESHOLD)
-            self.threshold.grid(row = 1, column = 1, sticky='w')
-            
-            # Add sliders for min size threshold:
-            self.minSizeLbl = Label(self.frameImage, text="Min Size:").grid(row=2,padx=20, sticky=W)
-            self.minSizeVal = Scale(self.frameImage, from_=0, to=10000, orient=HORIZONTAL)
-            self.minSizeVal.set(DEFAULT_MIN_SIZE)
-            self.minSizeVal.grid(row = 2, column = 1, sticky='w')
-            
-            # Add sliders for area threshold:
-            self.areaValLbl = Label(self.frameImage, text="Area Treshold:").grid(row=3, padx=20, sticky=W)
-            self.areaVal = Scale(self.frameImage, from_=0, to=10000, orient=HORIZONTAL)
-            self.areaVal.set(DEFAULT_AREA_SIZE)
-            self.areaVal.grid(row = 3, column = 1, sticky='w')
-            
-            # Add button for segmentation Preview
-            self.btnSegmentPreview = ttk.Button(self.frameImage, text="Preview", command=self.previewSegmentation)
-            self.btnSegmentPreview.config(width=20)
-            self.btnSegmentPreview.grid(column = 1, row = 4, sticky='w')
-            
-            # Add button for clear segmentation values
-            self.btnSegmentPreview = ttk.Button(self.frameImage, text="Reset Thresholds", command=self.resetThresholds)
-            self.btnSegmentPreview.config(width=20)
-            self.btnSegmentPreview.grid(column = 2, row = 4, sticky='w')
-            
-            # Add button for image edit
-            self.btnSegmentPreview = ttk.Button(self.frameImage, text="Edit", command=self.editImage)
-            self.btnSegmentPreview.config(width=20)
-            self.btnSegmentPreview.grid(column = 3, row = 4, sticky='w')
-            
-            # Scroll image using mouse wheel
-            self.imgCanvas.bind("<MouseWheel>",self.zoomer)
-            
-            # Move using mouse click
-            self.imgCanvas.bind("<ButtonPress-1>", self.move_start)
-            self.imgCanvas.bind("<B1-Motion>", self.move_move)
-            
-            #self.btnSegmentPreview.lift()
-            
-        except IOError:
-            #print("Not an image!")
-            print(IOError.message)
+            try:
+                # Create frame for image
+                self.frameImage = Frame(self)
+                self.frameImage.grid(column = 2, row = 0, sticky='nsew')
+                
+                 # Create frame for sliders
+                self.frameSliders = Frame(self)
+                self.frameSliders.grid(column = 2, row = 1, sticky='nsew')
+                
+                # Create canvas for image
+                self.imgCanvas = Canvas(self.frameImage, width = 500, height = 500)
+                
+                # Place the image canvas in the correct location in the window
+                self.imgCanvas.grid(column = 0, row = 0, padx=120, sticky='n', columnspan=100)
+                
+                # Prepare the image with first segmentation
+                #self.img = seg.imageConfigSegment(fileWithPath)()
+                self.img = self.dictFilesSegment[self.currentFile][SEGMENT_FUNC_INDX]()
+                self.img = self.img.resize((MIN_DISPLAY_SIZE_WIDTH, MIN_DISPLAY_SIZE_HEIGHT), Image.ANTIALIAS)
+                
+                # Put photo as attribute in order to prevent garbage collection
+                self.photo = ImageTk.PhotoImage(self.img)
+                
+                # put image on canvas pic's upper left corner (NW) on the canvas
+                #self.imgCanvas.create_image((self.imgCanvas.winfo_width() / 2, self.imgCanvas.winfo_height() / 2), image=self.photo)
+                self.imgCanvas.create_image((0,0), image=self.photo, anchor=NW)
+                
+                # Configure scroll area for image
+                self.imgCanvas.configure(scrollregion = self.imgCanvas.bbox("all"))
+                
+                # Add sliders for segmentation options:
+                self.thresholdLbl = Label(self.frameImage, text="Threshold:").grid(row=1,padx=20, sticky=W)
+                self.threshold = Scale(self.frameImage, from_=0, to=1, resolution = THRESHOLD_RESOLUTION, orient=HORIZONTAL)
+                self.threshold.set(self.dictFilesSegment[self.currentFile][THRESHOLD_INDX])
+                self.threshold.grid(row = 1, column = 1, sticky='w')
+                
+                # Add sliders for min size threshold:
+                self.minSizeLbl = Label(self.frameImage, text="Min Size:").grid(row=2,padx=20, sticky=W)
+                self.minSizeVal = Scale(self.frameImage, from_=0, to=10000, orient=HORIZONTAL)
+                self.minSizeVal.set(self.dictFilesSegment[self.currentFile][MIN_SIZE_INDX])
+                self.minSizeVal.grid(row = 2, column = 1, sticky='w')
+                
+                # Add sliders for area threshold:
+                self.areaValLbl = Label(self.frameImage, text="Area Treshold:").grid(row=3, padx=20, sticky=W)
+                self.areaVal = Scale(self.frameImage, from_=0, to=10000, orient=HORIZONTAL)
+                self.areaVal.set(self.dictFilesSegment[self.currentFile][AREA_SIZE_INDX])
+                self.areaVal.grid(row = 3, column = 1, sticky='w')
+                
+                # Add button for segmentation Preview
+                self.btnSegmentPreview = ttk.Button(self.frameImage, text="Preview", command=self.previewSegmentation)
+                self.btnSegmentPreview.config(width=20)
+                self.btnSegmentPreview.grid(column = 1, row = 4, sticky='w')
+                
+                # Add button for clear segmentation values
+                self.btnSegmentPreview = ttk.Button(self.frameImage, text="Reset Thresholds", command=self.resetThresholds)
+                self.btnSegmentPreview.config(width=20)
+                self.btnSegmentPreview.grid(column = 2, row = 4, sticky='w')
+                
+                # Add button for image edit
+                self.btnSegmentPreview = ttk.Button(self.frameImage, text="Edit", command=self.editImage)
+                self.btnSegmentPreview.config(width=20)
+                self.btnSegmentPreview.grid(column = 3, row = 4, sticky='w')
+                
+                # Scroll image using mouse wheel
+                self.imgCanvas.bind("<MouseWheel>",self.zoomer)
+                
+                # Move using mouse click
+                self.imgCanvas.bind("<ButtonPress-1>", self.move_start)
+                self.imgCanvas.bind("<B1-Motion>", self.move_move)
+                
+                #self.btnSegmentPreview.lift()
+                
+            except IOError:
+                #print("Not an image!")
+                print(IOError.message)
             
     def zoomer(self, event):
         # Get image current size
@@ -248,10 +257,11 @@ class Root(Tk):
         # Configure canvas to be scrollabale
         self.imgCanvas.configure(scrollregion = self.imgCanvas.bbox("all"))
 
-    # mouse move
+    # mouse start move event
     def move_start(self, event):
         self.imgCanvas.scan_mark(event.x, event.y)
-        
+    
+    # Drag mouse event
     def move_move(self, event):
         self.imgCanvas.scan_dragto(event.x, event.y, gain=1)
     
@@ -266,8 +276,15 @@ class Root(Tk):
         width, height = self.img.size
         
         try:
+            # Prepare list with configuration for image
+            lstConfigImg = [seg.imageConfigSegment(currentFile, threshold, minSizeVal, areaVal), threshold, minSizeVal, areaVal]
+            
+            # Save the parameters for the image
+            self.dictFilesSegment[self.currentFile] = lstConfigImg
+            
             # Perform the segmentation after changing values
-            self.img = seg.imageConfigSegment(currentFile, threshold, minSizeVal, areaVal)()
+            #self.img = seg.imageConfigSegment(currentFile, threshold, minSizeVal, areaVal)()
+            self.img = self.dictFilesSegment[self.currentFile][SEGMENT_FUNC_INDX]()
             self.img = self.img.resize((width, height), Image.ANTIALIAS)
             self.photo = ImageTk.PhotoImage(self.img)
             
@@ -285,7 +302,10 @@ class Root(Tk):
         self.areaVal.set(DEFAULT_AREA_SIZE)
         
     def loadImagesInPath(self):
-    
+        
+        # Create empty dictionary for files
+        self.dictFilesSegment = {}
+        
         # Load all files in directory to array - without directories
         onlyfiles = [f for f in listdir(self.path) if isfile(join(self.path, f)) and f.lower().endswith(ACCEPTED_EXTENSIONS)]
         
@@ -294,6 +314,11 @@ class Root(Tk):
         # Open all the images in the directory
         for image in onlyfiles:    
             self.lbFiles.insert(nImgIndex,image)
+            
+            # Save images into dictionary in order to perform segmentation
+            self.dictFilesSegment[image] = [seg.imageConfigSegment(self.path + '/' + image), DEFAULT_THRESHOLD, DEFAULT_MIN_SIZE, DEFAULT_AREA_SIZE]
+            
+            # Increment the index
             nImgIndex = nImgIndex + 1
     
     # Function for button edit image
