@@ -12,35 +12,40 @@ try:
     from tkinter import filedialog
     from tkinter import messagebox
     from PIL import Image, ImageTk
-    from os import listdir
-    from os.path import isfile, join
+    from os import listdir, getcwd
+    from os.path import isfile, join, basename, dirname
     from tkinter import Menu
     import Segmentation as seg
     import Paint as pnt 
     import Notebook as no
     import AboutWindow as ab
     import webbrowser
-    import os
+    #import os
     import gc
+    import time
 except ImportError as impError:
     with open('./Logs/Imports.log', 'a') as import_log_file:
         import_log_file.write("Date - " + str(datetime.now().strftime("%d/%m/%Y %H:%M:%S")) + "\n" + str(impError) + "\n")
     sys.exit()  
 
 # Constant variable definition
-DEFAULT_THRESHOLD       = 0.6     # Default threshold value
-DEFAULT_MIN_SIZE        = 1000    # Default min size of object for segmentation
-DEFAULT_AREA_SIZE       = 1000    # Default area threshold for segmentation
-THRESHOLD_RESOLUTION    = 0.0005  # Increment resolution for threshold
-ZOOM_IN_SCALE           = 1.1     # Zoom in scale size
-ZOOM_OUT_SCALE          = 0.9     # Zoom out scale size
-MIN_DISPLAY_SIZE_WIDTH  = 400     # Minimum size in pixel of displayed image of width
-MIN_DISPLAY_SIZE_HEIGHT = 400     # Minimum size in pixel of displayed image of height
-SEGMENT_FUNC_INDX       = 0       # Index for segmentation function in the list inside dictionary of files
-THRESHOLD_INDX          = 1       # Index for threshold in the list inside dictionary of files
-MIN_SIZE_INDX           = 2       # Index for min size in the list inside dictionary of files
-AREA_SIZE_INDX          = 3       # Index for area size in the list inside dictionary of files
-PROGRAM_PATH            = os.getcwd()   # Get path of the py files
+DEFAULT_THRESHOLD       = 0.6           # Default threshold value
+DEFAULT_MIN_SIZE        = 1000          # Default min size of object for segmentation
+DEFAULT_AREA_SIZE       = 1000          # Default area threshold for segmentation
+THRESHOLD_RESOLUTION    = 0.0005        # Increment resolution for threshold
+ZOOM_IN_SCALE           = 1.1           # Zoom in scale size
+ZOOM_OUT_SCALE          = 0.9           # Zoom out scale size
+MIN_DISPLAY_SIZE_WIDTH  = 400           # Minimum size in pixel of displayed image of width
+MIN_DISPLAY_SIZE_HEIGHT = 400           # Minimum size in pixel of displayed image of height
+SEGMENT_FUNC_INDX       = 0             # Index for segmentation function in the list inside dictionary of files
+THRESHOLD_INDX          = 1             # Index for threshold in the list inside dictionary of files
+MIN_SIZE_INDX           = 2             # Index for min size in the list inside dictionary of files
+AREA_SIZE_INDX          = 3             # Index for area size in the list inside dictionary of files
+PROGRESS_BAR_LENGTH     = 300           # Length of progressbar window
+PROGRESS_BAR_WIDTH      = 50            # Width of progressbar window
+PROGRESS_BAR_PERCENTAGE = 100.0         # Percent of progress bar set to 100
+PROGRESS_BAR_INIT       = 0             # value for reseting progress bar to progress Zero
+PROGRAM_PATH            = getcwd()      # Get path of the py files
 DOCUMENTATION_FILE      = PROGRAM_PATH + '/Documentation/GKAR.pdf'  # Get documentation file path
 ACCEPTED_EXTENSIONS     = ('jpg', 'jpeg', 'tif', 'tiff', 'png')     # Accepted file extensions
 
@@ -69,15 +74,21 @@ class Root(Tk):
         # Create file button for the upper menu
         fileMenu = Menu(self.menu, tearoff=False)
         
+        # Add the file menu to the upper menu
+        self.menu.add_cascade(label='File', menu=fileMenu)
+        self.config(menu=self.menu)
+        
         # Add button for choosing directory of files
         fileMenu.add_command(label='Open Directory', command = self.fileDialog)
         
         # Add separator for the exit button
         fileMenu.add_separator()
         
-        # Add the file menu to the upper menu
-        self.menu.add_cascade(label='File', menu=fileMenu)
-        self.config(menu=self.menu)
+        # Add button for perform segmentation on all images in list
+        fileMenu.add_command(label='Perform segmentation', command = self.performSegmentation)
+        
+        # Add separator for the exit button
+        fileMenu.add_separator()
         
         # Add exit button to File menu
         fileMenu.add_command(label='Exit', command = self.programExit,accelerator="Ctrl+Q")
@@ -323,8 +334,8 @@ class Root(Tk):
     
     # Function for button edit image
     def editImage(self):
-        window = pnt.Window(self.currentFile, self.path)
-        window.show()
+        paintWindow = pnt.PaintApp(self.currentFile, self.path)
+        paintWindow.show()
         
         # Prevent garbage collector cleaning the memory and closing the window
         pnt.paintApp.exec_()
@@ -368,6 +379,86 @@ class Root(Tk):
         if self.path != '':
             self.lbFiles.delete(0,'end')
             self.loadImagesInPath()
+            
+    def performSegmentation(self):
+        
+        # Get the number of pictures to perform segmentation
+        picNum = self.lbFiles.size()
+        
+        # Check if no images in list to perform segmentation
+        if (picNum == 0):
+            messagebox.showerror(title="Error", message="No images was selected to perform segmentation!")
+        # Exists at least One image to segmentation
+        else:
+            # Select the path and name of the result files
+            fullpath = filedialog.asksaveasfilename(defaultextension='.txt', filetypes=(("Text", "*.txt"),("All Files", "*.*")))
+            
+            # Check if selected wrong path
+            if (not fullpath):
+                # Wrong path selected
+                messagebox.showerror(title="Error", message="Wrong path selected!")
+                
+                return 0
+            # Correct path selected
+            else:
+                # Get filename and path from fullpath
+                filename = basename(fullpath)
+                filepath = dirname(fullpath)
+                
+                #start progress bar
+                popup = Toplevel()
+                
+                # Set size of popup window
+                popup.geometry(str(PROGRESS_BAR_LENGTH) + "x" + str(PROGRESS_BAR_WIDTH))
+                
+                # Disable buttons for popup
+                popup.resizable(0,0)
+                
+                # Set progress bar window label as segmentation
+                labelText = StringVar()
+                Label(popup, textvariable=labelText).grid(row=0,column=0)
+                
+                # Initialize progress to Zero
+                progress = PROGRESS_BAR_INIT
+                
+                # Create the progress bar widget
+                progress_var = DoubleVar()
+                progress_bar = ttk.Progressbar(popup, variable=progress_var, maximum=PROGRESS_BAR_PERCENTAGE, length=PROGRESS_BAR_LENGTH)
+                progress_bar.grid(row=1, column=0, sticky="NESW")
+                
+                # Define progress step as 100 divide by number of images
+                progress_step = float(PROGRESS_BAR_PERCENTAGE / (picNum))
+                
+                # Set pictures counter
+                picCounter = 0
+                
+                # Run over the images and perform the segmentation
+                for curFile in self.dictFilesSegment:
+                    #print(self.dictFilesSegment[curFile])
+                    
+                    # Update the percentage of segmentation with percision of 2 digits after float point
+                    labelText.set(str(format((picCounter * progress_step), '.2f')) + "%")
+                    
+                    # Update progress bar popup window
+                    popup.update()
+                    
+                    # Wait for the result of segmentation
+                    time.sleep(1)
+                    self.dictFilesSegment[curFile][SEGMENT_FUNC_INDX](1,filepath,filename)
+                    
+                    # Increment the progress
+                    progress += progress_step
+                    
+                    # Set the current progress
+                    progress_var.set(progress)
+                    
+                    # Increment picture counter
+                    picCounter += 1
+                 
+                # Destroy the popup windows as the segmentation ended
+                popup.destroy()
+        
+        return 0
 
 # Check if we are running the module from the main scope
 if __name__ == "__main__":

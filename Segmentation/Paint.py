@@ -22,7 +22,7 @@ savedAsPath         = SAVED_SAME_PATH_AND_NAME
 savedAsFileName     = ""
 
 # window class 
-class Window(QMainWindow):
+class PaintApp(QMainWindow):
     
     def __init__(self, fileName,fileP): 
         super().__init__() 
@@ -181,7 +181,7 @@ class Window(QMainWindow):
   
         # creating options for brush color 
         # creating action for black color 
-        black = QAction("Black", self) 
+        black = QAction("Split - (Black)", self) 
         
         # adding this action to the brush colors 
         b_color.addAction(black) 
@@ -190,7 +190,7 @@ class Window(QMainWindow):
         black.triggered.connect(self.blackColor)
   
         # similarly repeating above steps for different color 
-        white = QAction("White", self)
+        white = QAction("Merge - (White)", self)
         b_color.addAction(white) 
         white.triggered.connect(self.whiteColor)
         

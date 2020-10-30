@@ -8,13 +8,33 @@ from skimage import data
 from skimage import color
 from skimage import morphology
 from skimage import segmentation
+from os.path import splitext
+
+# Constant variable definition
+SAVE_OPTION_FALSE               = 0             # Save option was not selected
+SAVE_OPTION_TRUE                = 1             # Save option was selected
+SAVE_FILENAME_INDEX             = 0             # Save filename index in splited list of filename and extension
+SAVE_FILE_EXTENSION_INDEX       = 1             # Save file extension index in splited list of filename and extension
+SAVE_FAILED                     = 0             # Status for image that failed in save
+SAVED_SUCCESSFULLY              = 1             # Status for image saved successfully
+CONTOUR_FILENAME_ADDITION       = "_contour"    # Save contour file additional word
+GRAYSCALE_FILENAME_ADDITION     = "_grayscale"  # Save grayscale file additional word
 
 # The function configures an image before segmentation
 def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 1000):
+    # Convert image numpy array to grayscale
+    def grayConversion(image):
+        grayValue = 0.07 * image[:,:,2] + 0.72 * image[:,:,1] + 0.21 * image[:,:,0]
+        gray_img = grayValue.astype(np.uint8)
+        return gray_img
+    
     # The function gets numpy array for image and mask and returns the cropped image by the mask
     def cropShape(npImg, npMask):
-        # Copy the image to new numpy array of pixels
-        npCropImg = np.copy(npImg)
+        # Copy the image as grayscale
+        npGrayImage = grayConversion(npImg)
+        
+        # list of grayscale values
+        lstGrayscale = []
 
         # Initialize the indexes for loop
         nIndxRow = 0
@@ -24,40 +44,34 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
         for nIndxRow in range(0, npImg.shape[0]):
             # Run over the columns of the image
             for nIndxCol in range(0, npImg.shape[1]):
-                # If the current pixel is set to False in the mask then the pixel is not part of the bone
-                if npMask[nIndxRow][nIndxCol] == False:
-                    # Reset the pixel if it is not part of the bone
-                    npCropImg[nIndxRow][nIndxCol] = [0,0,0]
+                # If the current pixel is part of the bone
+                if npMask[nIndxRow][nIndxCol] == True:
+                    # Add the point to grayscle array
+                    lstGrayscale.append((nIndxRow, nIndxCol, npGrayImage[nIndxRow][nIndxCol]))
 
-        return (npCropImg)
+        return (lstGrayscale)
     
     # The function prints the contour only
-    # Remember to remove figsize after all test has been done!!!!!!!!!!!!!
-    def cropContour(qContourSet, figsize):
-        
-        # Test image
-        data = np.zeros((figsize[0],figsize[1],3), dtype=np.uint8)
-        
-        # Set white pixels
-        for i in range(figsize[0]):
-            for j in range(figsize[1]):
-                data[i][j] = [255,255,255]
+    def cropContour(qContourSet):
+        # Contour points list
+        lstContourPoints = []
         
         # Get all contour pathes (if multiple shapes)
         pathes = qContourSet.collections[0].get_paths()  # grab the 1st path
+        
+        # Run over all the pathes in the contour
         for path in pathes:
             coordinates = path.vertices
             
-            # Run over coordinates and set red color pixel
+            # Run over coordinates and insert them into the contour list
             for cord in coordinates:
-                data[int(cord[1])][int(cord[0])] = [254,0,0]
+                # Add the coordinates of the contour to the result list
+                lstContourPoints.append((int(cord[1]), int(cord[0])))
         
-        # Show reuslt image
-        image = Image.fromarray(data)
-        image.show()
+        return (lstContourPoints)
     
     # The function Performs the segmentation
-    def perform_segmentation(save = 0):
+    def perform_segmentation(saveOption = SAVE_OPTION_FALSE, saveFilepath="", saveFilename=""):
         # Open the image as basic image
         im = Image.open(path)
         
@@ -120,6 +134,45 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
         
         # Close figure after end of segmentation in order to save memory
         plt.close()
+        
+        # Check if save option was selected
+        if (saveOption):
+            # Calculate the contour points list
+            lstContourPoints = cropContour(contLines)
+            
+            # Prepare contour points filename - first split the filename and extension
+            lstFileAndExtension = splitext(saveFilename)
+            
+            # Add the word _contour after filename and then add extension
+            strContourFile = saveFilepath + "\\" + lstFileAndExtension[SAVE_FILENAME_INDEX] + CONTOUR_FILENAME_ADDITION + lstFileAndExtension[SAVE_FILE_EXTENSION_INDEX]
+            
+            # Add the word _grayscale after filename and then add extension
+            strGrayscaleFile = saveFilepath + "\\" + lstFileAndExtension[SAVE_FILENAME_INDEX] + GRAYSCALE_FILENAME_ADDITION + lstFileAndExtension[SAVE_FILE_EXTENSION_INDEX]
+            
+            # Try save contour to file
+            try:
+                # Write contour points to file
+                with open(strContourFile, "a") as outContour:
+                   outContour.write(str(lstContourPoints) + '\n\n')
+            except:
+                print("Error in save contour")
+                
+                return (SAVE_FAILED)
+            
+            # Calculate the grayscale points list
+            lstGrayscalePoints = cropShape(img, mask)
+            
+            # Try save grayscale to file
+            try:
+                # Write grayscale points to file
+                with open(strGrayscaleFile, "a") as outGrayscale:
+                   outGrayscale.write(str(lstGrayscalePoints) + '\n\n')
+            except:
+                print("Error in save grayscale")
+                
+                return (SAVE_FAILED)
+                
+            return (SAVED_SUCCESSFULLY)
         
         return (img_arr)
     return perform_segmentation
