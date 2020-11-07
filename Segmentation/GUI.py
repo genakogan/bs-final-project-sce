@@ -192,23 +192,40 @@ class Root(Tk):
                 # Configure scroll area for image
                 self.imgCanvas.configure(scrollregion = self.imgCanvas.bbox("all"))
                 
+                # Define variablies to hold data in silders and spinboxes
+                varThreshold = DoubleVar(value = 0.)
+                varMinSize = IntVar(value = 0)
+                varAreaThreshold = IntVar(value = 0)
+                
                 # Add sliders for segmentation options:
                 self.thresholdLbl = Label(self.frameImage, text="Threshold:").grid(row=1,padx=20, sticky=W)
-                self.threshold = Scale(self.frameImage, from_=0, to=1, resolution = THRESHOLD_RESOLUTION, orient=HORIZONTAL)
+                self.threshold = Scale(self.frameImage, showvalue=0, from_=0, to=1, resolution = THRESHOLD_RESOLUTION, orient=HORIZONTAL, variable=varThreshold)
                 self.threshold.set(self.dictFilesSegment[self.currentFile][THRESHOLD_INDX])
                 self.threshold.grid(row = 1, column = 1, sticky='w')
                 
+                # Add textbox for threshold
+                self.tbThreshold = Spinbox(self.frameImage, textvariable=varThreshold, wrap=True, width=10, from_=0, to=1, increment = THRESHOLD_RESOLUTION)
+                self.tbThreshold.grid(row = 1, column = 2,rowspan=1, sticky='WE')
+                
                 # Add sliders for min size threshold:
                 self.minSizeLbl = Label(self.frameImage, text="Min Size:").grid(row=2,padx=20, sticky=W)
-                self.minSizeVal = Scale(self.frameImage, from_=0, to=10000, orient=HORIZONTAL)
+                self.minSizeVal = Scale(self.frameImage, showvalue=0, from_=0, to=10000, orient=HORIZONTAL, variable=varMinSize)
                 self.minSizeVal.set(self.dictFilesSegment[self.currentFile][MIN_SIZE_INDX])
                 self.minSizeVal.grid(row = 2, column = 1, sticky='w')
                 
+                # Add textbox for min size
+                self.tbMinSize = Spinbox(self.frameImage, textvariable=varMinSize, wrap=True, width=10, from_=0, to=10000)
+                self.tbMinSize.grid(row = 2, column = 2,rowspan=1, sticky='WE')
+                
                 # Add sliders for area threshold:
                 self.areaValLbl = Label(self.frameImage, text="Area Treshold:").grid(row=3, padx=20, sticky=W)
-                self.areaVal = Scale(self.frameImage, from_=0, to=10000, orient=HORIZONTAL)
+                self.areaVal = Scale(self.frameImage, showvalue=0, from_=0, to=10000, orient=HORIZONTAL, variable=varAreaThreshold)
                 self.areaVal.set(self.dictFilesSegment[self.currentFile][AREA_SIZE_INDX])
                 self.areaVal.grid(row = 3, column = 1, sticky='w')
+                
+                # Add textbox for area threshold
+                self.tbAreaThreshold = Spinbox(self.frameImage, textvariable=varAreaThreshold, wrap=True, width=10, from_=0, to=10000)
+                self.tbAreaThreshold.grid(row = 3, column = 2,rowspan=1, sticky='WE')
                 
                 # Add button for segmentation Preview
                 self.btnSegmentPreview = ttk.Button(self.frameImage, text="Preview", command=self.previewSegmentation)
@@ -220,10 +237,15 @@ class Root(Tk):
                 self.btnSegmentPreview.config(width=20)
                 self.btnSegmentPreview.grid(column = 2, row = 4, sticky='w')
                 
+                # Add button for image segmentation save
+                self.btnSegmentPreview = ttk.Button(self.frameImage, text="Save", command=self.singleImageSegmentation)
+                self.btnSegmentPreview.config(width=20)
+                self.btnSegmentPreview.grid(column = 3, row = 4, sticky='w')
+                
                 # Add button for image edit
                 self.btnSegmentPreview = ttk.Button(self.frameImage, text="Edit", command=self.editImage)
                 self.btnSegmentPreview.config(width=20)
-                self.btnSegmentPreview.grid(column = 3, row = 4, sticky='w')
+                self.btnSegmentPreview.grid(column = 4, row = 4, sticky='w')
                 
                 # Scroll image using mouse wheel
                 self.imgCanvas.bind("<MouseWheel>",self.zoomer)
@@ -444,7 +466,7 @@ class Root(Tk):
                     
                     # Wait for the result of segmentation
                     time.sleep(1)
-                    self.dictFilesSegment[curFile][SEGMENT_FUNC_INDX](1,filepath,filename)
+                    self.dictFilesSegment[curFile][SEGMENT_FUNC_INDX](1,filepath,filename, picCounter)
                     
                     # Increment the progress
                     progress += progress_step
@@ -457,8 +479,31 @@ class Root(Tk):
                  
                 # Destroy the popup windows as the segmentation ended
                 popup.destroy()
-        
+                
         return 0
+                
+    def singleImageSegmentation(self):
+        
+        # Select the path and name of the result files
+        fullpath = filedialog.asksaveasfilename(defaultextension='.txt', filetypes=(("Text", "*.txt"),("All Files", "*.*")))
+        
+        # Check if selected wrong path
+        if (not fullpath):
+            # Wrong path selected
+            messagebox.showerror(title="Error", message="Wrong path selected!")
+            
+            return 0
+        # Correct path selected
+        else:
+            # Get filename and path from fullpath
+            filename = basename(fullpath)
+            filepath = dirname(fullpath)
+            
+            # Perform segmentation and save to file
+            self.dictFilesSegment[self.currentFile][SEGMENT_FUNC_INDX](1,filepath,filename, 0)
+            
+            # Show message about successful segmentation
+            messagebox.showinfo(title="Segmentation completed!", message="Segmentation of " + self.currentFile + " completed!")
 
 # Check if we are running the module from the main scope
 if __name__ == "__main__":

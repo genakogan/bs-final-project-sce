@@ -17,11 +17,47 @@ SAVE_FILENAME_INDEX             = 0             # Save filename index in splited
 SAVE_FILE_EXTENSION_INDEX       = 1             # Save file extension index in splited list of filename and extension
 SAVE_FAILED                     = 0             # Status for image that failed in save
 SAVED_SUCCESSFULLY              = 1             # Status for image saved successfully
+COLUMN_NAMES                    = ['X', 'Y',
+                                   'Z', 'HU']   # Name of columns in result file
 CONTOUR_FILENAME_ADDITION       = "_contour"    # Save contour file additional word
 GRAYSCALE_FILENAME_ADDITION     = "_grayscale"  # Save grayscale file additional word
 
 # The function configures an image before segmentation
 def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 1000):
+    
+    # The function returns string with result to write to file according to the array
+    def buildResultString(lstInput):
+        # Initialize the result string
+        strResult = ""
+        
+        # Get the amount of items in each line
+        nLineSize = len(lstInput[0])
+        
+        # Run over the list values
+        for line in lstInput:
+            # Initialize current line
+            curLine = ""
+            
+            # Run over the values of the point
+            for nIndx in range(nLineSize):
+                # Build result line
+                curLine += COLUMN_NAMES[nIndx] + ":" + str(line[nIndx])
+                
+                # Check if last column reached
+                if (nIndx == (nLineSize - 1)):
+                    curLine += '\n'
+                # Current column is not the last one
+                else:
+                    curLine += ', '
+                    
+                # Increment index column
+                nIndx += 1
+            
+            # Append the current line to the result
+            strResult += curLine
+        
+        return (strResult)
+    
     # Convert image numpy array to grayscale
     def grayConversion(image):
         grayValue = 0.07 * image[:,:,2] + 0.72 * image[:,:,1] + 0.21 * image[:,:,0]
@@ -29,7 +65,7 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
         return gray_img
     
     # The function gets numpy array for image and mask and returns the cropped image by the mask
-    def cropShape(npImg, npMask):
+    def cropShape(npImg, npMask, nZValue):
         # Copy the image as grayscale
         npGrayImage = grayConversion(npImg)
         
@@ -47,12 +83,12 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
                 # If the current pixel is part of the bone
                 if npMask[nIndxRow][nIndxCol] == True:
                     # Add the point to grayscle array
-                    lstGrayscale.append((nIndxRow, nIndxCol, npGrayImage[nIndxRow][nIndxCol]))
+                    lstGrayscale.append((nIndxRow, nIndxCol, nZValue, npGrayImage[nIndxRow][nIndxCol]))
 
         return (lstGrayscale)
     
     # The function prints the contour only
-    def cropContour(qContourSet):
+    def cropContour(qContourSet, nZValue):
         # Contour points list
         lstContourPoints = []
         
@@ -66,12 +102,12 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
             # Run over coordinates and insert them into the contour list
             for cord in coordinates:
                 # Add the coordinates of the contour to the result list
-                lstContourPoints.append((int(cord[1]), int(cord[0])))
+                lstContourPoints.append((int(cord[1]), int(cord[0]), nZValue))
         
         return (lstContourPoints)
     
     # The function Performs the segmentation
-    def perform_segmentation(saveOption = SAVE_OPTION_FALSE, saveFilepath="", saveFilename=""):
+    def perform_segmentation(saveOption = SAVE_OPTION_FALSE, saveFilepath = "", saveFilename = "", nZValue = 0):
         # Open the image as basic image
         im = Image.open(path)
         
@@ -138,7 +174,7 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
         # Check if save option was selected
         if (saveOption):
             # Calculate the contour points list
-            lstContourPoints = cropContour(contLines)
+            lstContourPoints = cropContour(contLines, nZValue)
             
             # Prepare contour points filename - first split the filename and extension
             lstFileAndExtension = splitext(saveFilename)
@@ -153,20 +189,22 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
             try:
                 # Write contour points to file
                 with open(strContourFile, "a") as outContour:
-                   outContour.write(str(lstContourPoints) + '\n\n')
+                   #outContour.write(str(lstContourPoints) + '\n\n')
+                   outContour.write(buildResultString(lstContourPoints))
             except:
                 print("Error in save contour")
                 
                 return (SAVE_FAILED)
             
             # Calculate the grayscale points list
-            lstGrayscalePoints = cropShape(img, mask)
+            lstGrayscalePoints = cropShape(img, mask, nZValue)
             
             # Try save grayscale to file
             try:
                 # Write grayscale points to file
                 with open(strGrayscaleFile, "a") as outGrayscale:
-                   outGrayscale.write(str(lstGrayscalePoints) + '\n\n')
+                   #outGrayscale.write(str(lstGrayscalePoints) + '\n\n')
+                   outGrayscale.write(buildResultString(lstGrayscalePoints))
             except:
                 print("Error in save grayscale")
                 
