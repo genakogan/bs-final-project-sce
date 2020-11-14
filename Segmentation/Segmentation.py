@@ -17,8 +17,10 @@ SAVE_FILENAME_INDEX             = 0             # Save filename index in splited
 SAVE_FILE_EXTENSION_INDEX       = 1             # Save file extension index in splited list of filename and extension
 SAVE_FAILED                     = 0             # Status for image that failed in save
 SAVED_SUCCESSFULLY              = 1             # Status for image saved successfully
-COLUMN_NAMES                    = ['X', 'Y',
-                                   'Z', 'HU']   # Name of columns in result file
+#COLUMN_NAMES                    = ['X', 'Y',
+#                                   'Z', 'HU']   # Name of columns in result file
+PIXEL_TO_MM_VAL                 = 0.352777778   # The value of One pixel converted to milimeters
+XYZ_LAST_INDEX                  = 2             # The index of Z in the result list to check convert to milimeters
 CONTOUR_FILENAME_ADDITION       = "_contour"    # Save contour file additional word
 GRAYSCALE_FILENAME_ADDITION     = "_grayscale"  # Save grayscale file additional word
 
@@ -41,7 +43,15 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
             # Run over the values of the point
             for nIndx in range(nLineSize):
                 # Build result line
-                curLine += COLUMN_NAMES[nIndx] + ":" + str(line[nIndx])
+                #curLine += COLUMN_NAMES[nIndx] + ":" + str(line[nIndx])
+                
+                # Check if the current cell is part of X,Y,Z to convert to milimeters
+                if (nIndx <= XYZ_LAST_INDEX):
+                    # Convert the value of coordinate to milimeters
+                    curLine += str(int(line[nIndx]) * PIXEL_TO_MM_VAL)
+                # The current cell is not x,y or z therefore save it as is
+                else:
+                    curLine += str(line[nIndx])     
                 
                 # Check if last column reached
                 if (nIndx == (nLineSize - 1)):
@@ -63,6 +73,28 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
         grayValue = 0.07 * image[:,:,2] + 0.72 * image[:,:,1] + 0.21 * image[:,:,0]
         gray_img = grayValue.astype(np.uint8)
         return gray_img
+    
+    # The function gets numpy array for image and mask and returns the cropped objects in the image
+    def cropBackground(npImg, npMask):
+        # Copy the image to new numpy array of pixels
+        npCropImg = np.copy(npImg)
+
+        # Initialize the indexes for loop
+        nIndxRow = 0
+        nIndxCol = 0
+
+        # Run over the rows of the image
+        for nIndxRow in range(0, npImg.shape[0]):
+            # Run over the columns of the image
+            for nIndxCol in range(0, npImg.shape[1]):
+                # If the current pixel is set to False in the mask then the pixel is not part of the bone
+                if npMask[nIndxRow][nIndxCol] == False:
+                    # Reset the pixel if it is not part of the bone
+                    npCropImg[nIndxRow][nIndxCol] = [0,0,0]
+                else:
+                    npCropImg[nIndxRow][nIndxCol] = [255,255,255]
+
+        return (npCropImg)
     
     # The function gets numpy array for image and mask and returns the cropped image by the mask
     def cropShape(npImg, npMask, nZValue):
@@ -136,18 +168,26 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
 
         # Remove some holes in the object - Dilation
         mask = morphology.closing(mask, morphology.disk(1))
+        #i1 = cropBackground(img,mask)
+        #i1 = Image.fromarray(i1, 'RGB')
+        #i1.save("C:\\Users\\Aviel-PC\\Pictures\\res\\test.jpg")
 
         # SLIC result
         slic = segmentation.slic(img, n_segments=1, start_label=1)
 
-        # maskSLIC result
-        m_slic = segmentation.slic(img, n_segments=1, mask=mask, start_label=1)
-
+        # Check if the mask is not empty
+        if (mask.all()):
+            # Use maskSLIC result
+            m_slic = segmentation.slic(img, n_segments=1, mask=mask, start_label=1)
+        else:
+            # Use the slic algorithm instead of mask slic if mask empty
+            m_slic = slic
+        
         # Display result
         # Set the figure size the same as the real image size
         fig = plt.figure(figsize = figsize)
         ax = fig.add_axes([0, 0, 1, 1])
-        ax.imshow(segmentation.mark_boundaries(img, m_slic), interpolation='nearest')
+        ax.imshow(segmentation.mark_boundaries(img, slic), interpolation='nearest')
         
         # Create bone contour and save contour lines in contLines
         contLines = ax.contour(mask, colors='red', linewidths=0.5)
