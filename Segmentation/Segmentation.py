@@ -3,6 +3,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import io
+import cv2
+import imutils
 from PIL import Image
 from skimage import data
 from skimage import color
@@ -25,7 +27,7 @@ CONTOUR_FILENAME_ADDITION       = "_contour"    # Save contour file additional w
 GRAYSCALE_FILENAME_ADDITION     = "_grayscale"  # Save grayscale file additional word
 
 # The function configures an image before segmentation
-def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 1000):
+def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 5000, max_size = 50000):
     
     # The function returns string with result to write to file according to the array
     def buildResultString(lstInput):
@@ -42,13 +44,11 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
             
             # Run over the values of the point
             for nIndx in range(nLineSize):
-                # Build result line
-                #curLine += COLUMN_NAMES[nIndx] + ":" + str(line[nIndx])
-                
+               
                 # Check if the current cell is part of X,Y,Z to convert to milimeters
                 if (nIndx <= XYZ_LAST_INDEX):
                     # Convert the value of coordinate to milimeters
-                    curLine += str(int(line[nIndx]) * PIXEL_TO_MM_VAL)
+                    curLine += '{0:.3f}'.format(int(line[nIndx]) * PIXEL_TO_MM_VAL)
                 # The current cell is not x,y or z therefore save it as is
                 else:
                     curLine += str(line[nIndx])     
@@ -75,7 +75,7 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
         return gray_img
     
     # The function gets numpy array for image and mask and returns the cropped objects in the image
-    def cropBackground(npImg, npMask):
+    def convertMaskToMatrix(npImg, npMask):
         # Copy the image to new numpy array of pixels
         npCropImg = np.copy(npImg)
 
@@ -91,10 +91,56 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
                 if npMask[nIndxRow][nIndxCol] == False:
                     # Reset the pixel if it is not part of the bone
                     npCropImg[nIndxRow][nIndxCol] = [0,0,0]
+                # The pixel is part of the bone - set white
                 else:
                     npCropImg[nIndxRow][nIndxCol] = [255,255,255]
 
         return (npCropImg)
+    
+    # The function convert matrix to boolean matrix
+    def convertMatrixToBool(npMask, npNewMask):
+        # Copy the image to new numpy array of pixels
+        npBool = np.copy(npMask)
+        #npBool = np.full((npNewMask.shape[0], npNewMask.shape[1]), False)
+        #print(npBool)
+
+        # Initialize the indexes for loop
+        nIndxRow = 0
+        nIndxCol = 0
+
+        # Run over the rows of the image
+        for nIndxRow in range(0, npNewMask.shape[0]):
+            # Run over the columns of the image
+            for nIndxCol in range(0, npNewMask.shape[1]):
+                # If the current pixel is set to White in the mask then the pixel is part of the mask
+                npBool[nIndxRow][nIndxCol] = (npNewMask[nIndxRow][nIndxCol][0] == 255)
+
+        return (npBool)
+    
+    # The function removes from the mask objects that greater than maxSize
+    def findMaskByMaxSize(npMask, npImage, maxSize):
+        # Convert the boolean mask to numpy matrix
+        mask = convertMaskToMatrix(npImage, npMask)
+        
+        # Perform morphological operations on the mask
+        se1 = cv2.getStructuringElement(cv2.MORPH_RECT, (5,5))
+        se2 = cv2.getStructuringElement(cv2.MORPH_RECT, (2,2))
+        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, se1)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, se2)
+        
+        # Find the contours of the objects in the mask
+        cnts = cv2.findContours(cv2.cvtColor(mask, cv2.COLOR_RGB2GRAY), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        cnts = imutils.grab_contours(cnts)
+        
+        # Run over the contours and test them by area
+        for currCont in cnts:
+            # Check if current contour's area is greater than maxSize
+            if (cv2.contourArea(currCont) > maxSize):
+                # Remove the contour from the mask by filling it with black color
+                cv2.drawContours(mask, [currCont], 0, (0, 0, 0), thickness = cv2.FILLED)
+        
+        return (convertMatrixToBool(npMask,mask))
+        
     
     # The function gets numpy array for image and mask and returns the cropped image by the mask
     def cropShape(npImg, npMask, nZValue):
@@ -150,7 +196,6 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
         height, width, depth = img.shape
         
         # Set DPI value for the image as default DPI
-        #dpi = im.info['dpi'][0]
         dpi = 72
         
         # Calculate the correct figure size in order to save dimensions of the image
@@ -168,12 +213,12 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
 
         # Remove some holes in the object - Dilation
         mask = morphology.closing(mask, morphology.disk(1))
-        #i1 = cropBackground(img,mask)
-        #i1 = Image.fromarray(i1, 'RGB')
-        #i1.save("C:\\Users\\Aviel-PC\\Pictures\\res\\test.jpg")
+        
+        # Find the objects that not large than max size
+        mask = findMaskByMaxSize(mask, img, max_size)
 
         # SLIC result
-        slic = segmentation.slic(img, n_segments=1, start_label=1)
+        #slic = segmentation.slic(img, n_segments=1, start_label=1)
 
         # Check if the mask is not empty
         if (mask.all()):
@@ -181,13 +226,14 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
             m_slic = segmentation.slic(img, n_segments=1, mask=mask, start_label=1)
         else:
             # Use the slic algorithm instead of mask slic if mask empty
-            m_slic = slic
+            #m_slic = slic
+            m_slic = segmentation.slic(img, n_segments=1, start_label=1)
         
         # Display result
         # Set the figure size the same as the real image size
         fig = plt.figure(figsize = figsize)
         ax = fig.add_axes([0, 0, 1, 1])
-        ax.imshow(segmentation.mark_boundaries(img, slic), interpolation='nearest')
+        ax.imshow(segmentation.mark_boundaries(img, m_slic), interpolation='nearest')
         
         # Create bone contour and save contour lines in contLines
         contLines = ax.contour(mask, colors='red', linewidths=0.5)

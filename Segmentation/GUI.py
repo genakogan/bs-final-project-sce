@@ -31,7 +31,8 @@ except ImportError as impError:
 # Constant variable definition
 DEFAULT_THRESHOLD       = 0.6           # Default threshold value
 DEFAULT_MIN_SIZE        = 1000          # Default min size of object for segmentation
-DEFAULT_AREA_SIZE       = 1000          # Default area threshold for segmentation
+DEFAULT_AREA_SIZE       = 5000          # Default area threshold for segmentation
+DEFAULT_MAX_SIZE        = 50000         # Default max size of object for segmentation
 THRESHOLD_RESOLUTION    = 0.0005        # Increment resolution for threshold
 ZOOM_IN_SCALE           = 1.1           # Zoom in scale size
 ZOOM_OUT_SCALE          = 0.9           # Zoom out scale size
@@ -41,6 +42,7 @@ SEGMENT_FUNC_INDX       = 0             # Index for segmentation function in the
 THRESHOLD_INDX          = 1             # Index for threshold in the list inside dictionary of files
 MIN_SIZE_INDX           = 2             # Index for min size in the list inside dictionary of files
 AREA_SIZE_INDX          = 3             # Index for area size in the list inside dictionary of files
+MAX_SIZE_INDX           = 4             # Index for max size in the list inside dictionary of files
 PROGRESS_BAR_LENGTH     = 300           # Length of progressbar window
 PROGRESS_BAR_WIDTH      = 50            # Width of progressbar window
 PROGRESS_BAR_PERCENTAGE = 100.0         # Percent of progress bar set to 100
@@ -195,6 +197,7 @@ class Root(Tk):
                 # Define variablies to hold data in silders and spinboxes
                 varThreshold = DoubleVar(value = 0.)
                 varMinSize = IntVar(value = 0)
+                varMaxSize = DoubleVar(value = 0)
                 varAreaThreshold = IntVar(value = 0)
                 
                 # Add sliders for segmentation options:
@@ -217,35 +220,45 @@ class Root(Tk):
                 self.tbMinSize = Spinbox(self.frameImage, textvariable=varMinSize, wrap=True, width=10, from_=0, to=10000)
                 self.tbMinSize.grid(row = 2, column = 2,rowspan=1, sticky='WE')
                 
+                # Add sliders for max size threshold:
+                self.maxSizeLbl = Label(self.frameImage, text="Max Size:").grid(row=3,padx=20, sticky=W)
+                self.maxSizeVal = Scale(self.frameImage, showvalue=0, from_=0, to=100000, orient=HORIZONTAL, variable=varMaxSize)
+                self.maxSizeVal.set(self.dictFilesSegment[self.currentFile][MAX_SIZE_INDX])
+                self.maxSizeVal.grid(row = 3, column = 1, sticky='w')
+                
+                # Add textbox for max size
+                self.tbMaxSize = Spinbox(self.frameImage, textvariable=varMaxSize, wrap=True, width=10, from_=0, to=100000)
+                self.tbMaxSize.grid(row = 3, column = 2,rowspan=1, sticky='WE')
+                
                 # Add sliders for area threshold:
-                self.areaValLbl = Label(self.frameImage, text="Area Treshold:").grid(row=3, padx=20, sticky=W)
+                self.areaValLbl = Label(self.frameImage, text="Area Treshold:").grid(row=4, padx=20, sticky=W)
                 self.areaVal = Scale(self.frameImage, showvalue=0, from_=0, to=10000, orient=HORIZONTAL, variable=varAreaThreshold)
                 self.areaVal.set(self.dictFilesSegment[self.currentFile][AREA_SIZE_INDX])
-                self.areaVal.grid(row = 3, column = 1, sticky='w')
+                self.areaVal.grid(row = 4, column = 1, sticky='w')
                 
                 # Add textbox for area threshold
                 self.tbAreaThreshold = Spinbox(self.frameImage, textvariable=varAreaThreshold, wrap=True, width=10, from_=0, to=10000)
-                self.tbAreaThreshold.grid(row = 3, column = 2,rowspan=1, sticky='WE')
+                self.tbAreaThreshold.grid(row = 4, column = 2,rowspan=1, sticky='WE')
                 
                 # Add button for segmentation Preview
                 self.btnSegmentPreview = ttk.Button(self.frameImage, text="Preview", command=self.previewSegmentation)
                 self.btnSegmentPreview.config(width=20)
-                self.btnSegmentPreview.grid(column = 1, row = 4, sticky='w')
+                self.btnSegmentPreview.grid(column = 1, row = 5, sticky='w')
                 
                 # Add button for clear segmentation values
                 self.btnSegmentPreview = ttk.Button(self.frameImage, text="Reset Thresholds", command=self.resetThresholds)
                 self.btnSegmentPreview.config(width=20)
-                self.btnSegmentPreview.grid(column = 2, row = 4, sticky='w')
+                self.btnSegmentPreview.grid(column = 2, row = 5, sticky='w')
                 
                 # Add button for image segmentation save
                 self.btnSegmentPreview = ttk.Button(self.frameImage, text="Save", command=self.singleImageSegmentation)
                 self.btnSegmentPreview.config(width=20)
-                self.btnSegmentPreview.grid(column = 3, row = 4, sticky='w')
+                self.btnSegmentPreview.grid(column = 3, row = 5, sticky='w')
                 
                 # Add button for image edit
                 self.btnSegmentPreview = ttk.Button(self.frameImage, text="Edit", command=self.editImage)
                 self.btnSegmentPreview.config(width=20)
-                self.btnSegmentPreview.grid(column = 4, row = 4, sticky='w')
+                self.btnSegmentPreview.grid(column = 4, row = 5, sticky='w')
                 
                 # Scroll image using mouse wheel
                 self.imgCanvas.bind("<MouseWheel>",self.zoomer)
@@ -304,13 +317,14 @@ class Root(Tk):
         threshold = self.threshold.get()
         minSizeVal = self.minSizeVal.get()
         areaVal = self.areaVal.get()
+        maxSizeVal = self.maxSizeVal.get()
         
         # Save image shape before segmentation in order to save the scale
         width, height = self.img.size
         
         try:
             # Prepare list with configuration for image
-            lstConfigImg = [seg.imageConfigSegment(currentFile, threshold, minSizeVal, areaVal), threshold, minSizeVal, areaVal]
+            lstConfigImg = [seg.imageConfigSegment(currentFile, threshold, minSizeVal, areaVal, maxSizeVal), threshold, minSizeVal, areaVal, maxSizeVal]
             
             # Save the parameters for the image
             self.dictFilesSegment[self.currentFile] = lstConfigImg
@@ -333,6 +347,7 @@ class Root(Tk):
         self.threshold.set(DEFAULT_THRESHOLD)
         self.minSizeVal.set(DEFAULT_MIN_SIZE)
         self.areaVal.set(DEFAULT_AREA_SIZE)
+        self.maxSizeVal.set(DEFAULT_MAX_SIZE)
         
     def loadImagesInPath(self):
         
@@ -349,7 +364,7 @@ class Root(Tk):
             self.lbFiles.insert(nImgIndex,image)
             
             # Save images into dictionary in order to perform segmentation
-            self.dictFilesSegment[image] = [seg.imageConfigSegment(self.path + '/' + image), DEFAULT_THRESHOLD, DEFAULT_MIN_SIZE, DEFAULT_AREA_SIZE]
+            self.dictFilesSegment[image] = [seg.imageConfigSegment(self.path + '/' + image), DEFAULT_THRESHOLD, DEFAULT_MIN_SIZE, DEFAULT_AREA_SIZE, DEFAULT_MAX_SIZE]
             
             # Increment the index
             nImgIndex = nImgIndex + 1
@@ -465,7 +480,7 @@ class Root(Tk):
                     popup.update()
                     
                     # Wait for the result of segmentation
-                    time.sleep(1)
+                    #time.sleep(1)
                     self.dictFilesSegment[curFile][SEGMENT_FUNC_INDX](1,filepath,filename, picCounter)
                     
                     # Increment the progress
