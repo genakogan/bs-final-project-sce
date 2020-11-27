@@ -40,7 +40,7 @@ with open(os.path.join(folder_path, 'Patient_Detail.csv'), 'w', newline ='') as 
         rows = []
         
         # Convert to float to avoid overflow or underflow losses.
-        image_2d = dicomImg.pixel_array.astype(float)
+        #image_2d = dicomImg.pixel_array.astype(float)
         
         # Get the slope and interept from the dicom image
         slope = float(dicomImg.RescaleSlope)

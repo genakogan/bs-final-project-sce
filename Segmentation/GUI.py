@@ -20,7 +20,6 @@ try:
     import Notebook as no
     import AboutWindow as ab
     import webbrowser
-    #import os
     import gc
     import time
 except ImportError as impError:

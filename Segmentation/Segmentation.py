@@ -19,15 +19,18 @@ SAVE_FILENAME_INDEX             = 0             # Save filename index in splited
 SAVE_FILE_EXTENSION_INDEX       = 1             # Save file extension index in splited list of filename and extension
 SAVE_FAILED                     = 0             # Status for image that failed in save
 SAVED_SUCCESSFULLY              = 1             # Status for image saved successfully
-#COLUMN_NAMES                    = ['X', 'Y',
-#                                   'Z', 'HU']   # Name of columns in result file
 PIXEL_TO_MM_VAL                 = 0.352777778   # The value of One pixel converted to milimeters
 XYZ_LAST_INDEX                  = 2             # The index of Z in the result list to check convert to milimeters
+X_INDEX_IN_LINE                 = 0             # The index of the x coordinate in a line
+Y_INDEX_IN_LINE                 = 1             # The index of the y coordinate in a line
 CONTOUR_FILENAME_ADDITION       = "_contour"    # Save contour file additional word
 GRAYSCALE_FILENAME_ADDITION     = "_grayscale"  # Save grayscale file additional word
 
 # The function configures an image before segmentation
 def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 5000, max_size = 50000):
+         
+    # Create sizes matrix
+    sizesMat = np.zeros(1)
     
     # The function returns string with result to write to file according to the array
     def buildResultString(lstInput):
@@ -55,6 +58,9 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
                 
                 # Check if last column reached
                 if (nIndx == (nLineSize - 1)):
+                    # Add the shape index
+                    curLine += ', ' + str(int(sizesMat[line[X_INDEX_IN_LINE]][line[Y_INDEX_IN_LINE]][0]))
+                    
                     curLine += '\n'
                 # Current column is not the last one
                 else:
@@ -119,8 +125,17 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
     
     # The function removes from the mask objects that greater than maxSize
     def findMaskByMaxSize(npMask, npImage, maxSize):
+        # Set the sizes matrix configurable within this function
+        nonlocal sizesMat
+        
+        # Reset the sizes matrix to zero values
+        sizesMat = np.zeros(npImage.shape)
+        
         # Convert the boolean mask to numpy matrix
         mask = convertMaskToMatrix(npImage, npMask)
+        
+        # Conuter for shape
+        nCounterShape = 1
         
         # Perform morphological operations on the mask
         se1 = cv2.getStructuringElement(cv2.MORPH_RECT, (5,5))
@@ -138,6 +153,16 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
             if (cv2.contourArea(currCont) > maxSize):
                 # Remove the contour from the mask by filling it with black color
                 cv2.drawContours(mask, [currCont], 0, (0, 0, 0), thickness = cv2.FILLED)
+            # The contour is not greater than max
+            else:
+                # Fill the shape with color that incremented by One each contour
+                cv2.drawContours(sizesMat, [currCont], 0, (nCounterShape, 0, 0), thickness = cv2.FILLED)
+                
+                # Fill the borders of the shape with the same color for contour
+                cv2.drawContours(sizesMat, [currCont], 0, (nCounterShape, 0, 0), thickness = 2)
+                
+                # Increment contour shape by One
+                nCounterShape += 1
         
         return (convertMatrixToBool(npMask,mask))
         
@@ -183,6 +208,19 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
                 lstContourPoints.append((int(cord[1]), int(cord[0]), nZValue))
         
         return (lstContourPoints)
+    
+    # Test function to write the sizes matrix to file
+    # Delete when end testing
+    def testSizesMat():
+        nonlocal sizesMat
+        strT = ""
+        for x in range(512):
+            for y in range(512):
+                strT += str(int(sizesMat[x][y][0])) + " "
+            strT += "\n"
+        with open("test.txt", "w") as t:
+            t.write(strT)
+        
     
     # The function Performs the segmentation
     def perform_segmentation(saveOption = SAVE_OPTION_FALSE, saveFilepath = "", saveFilename = "", nZValue = 0):
