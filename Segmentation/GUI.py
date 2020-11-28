@@ -19,6 +19,7 @@ try:
     import Paint as pnt 
     import Notebook as no
     import AboutWindow as ab
+    import ConvertDicom as cd
     import webbrowser
     import gc
     import time
@@ -353,9 +354,21 @@ class Root(Tk):
         # Create empty dictionary for files
         self.dictFilesSegment = {}
         
+        # Get all files in directory
+        #filesList = listdir(self.path)
+        
+        # get all the dicom files from the current directory
+        dcmFiles = list(filter(lambda file: file.endswith('.dcm'), listdir(self.path)))
+        
+        # Check if exist at least one dicom files in the directory
+        if (len(dcmFiles) != 0):
+            # Convert the dicom files to png
+            cd.convertDCM(self.path)
+        
         # Load all files in directory to array - without directories
         onlyfiles = [f for f in listdir(self.path) if isfile(join(self.path, f)) and f.lower().endswith(ACCEPTED_EXTENSIONS)]
         
+        # Define image index
         nImgIndex = 0
         
         # Open all the images in the directory

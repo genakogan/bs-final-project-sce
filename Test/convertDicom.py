@@ -50,7 +50,7 @@ with open(os.path.join(folder_path, 'Patient_Detail.csv'), 'w', newline ='') as 
         df_data = intercept + dicomImg.pixel_array.astype(float) * slope
         
         # Convert the image to tiff
-        curImage = curImage.replace('.dcm', '.jpg')
+        curImage = curImage.replace('.dcm', '.png')
         
         # Convert the image from grayscale back to RGB
         stacked_img = np.stack((df_data,)*3, axis=-1)
