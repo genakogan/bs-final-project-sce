@@ -4,13 +4,16 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import * 
 from PyQt5.QtGui import * 
 from PyQt5.QtCore import * 
+from pathlib import Path
 import sys 
 import PIL
 import os
+import shutil
 
 # Constant Definition
 SAVED_ICON                  = './Images/saved.png'
 UNSAVED_ICON                = './Images/unsaved.png'
+BACKUP_DIRECTORY_PATH       = '/Backup'
 SAVED_DIFF_PATH             = 0
 SAVED_SAME_PATH_DIFF_NAME   = 1
 SAVED_SAME_PATH_AND_NAME    = 2
@@ -304,26 +307,21 @@ class PaintApp(QMainWindow):
         # Create the path with file name to save
         strPath = self.filePath + "/" + self.name
         
+        # Create path to backupd directory
+        strBackupPath = self.filePath + BACKUP_DIRECTORY_PATH
+        
+        # Backup previous version of the file
+        boolBackupExists = Path(strBackupPath).exists()
+        
+        # Check if backup directory not exists
+        if (not boolBackupExists):
+            os.mkdir(strBackupPath)
+            
+        # Backup the previous file before saving
+        shutil.copy(strPath, strBackupPath)
+        
         # Save the file
         self.saveFileOperation(strPath)
-        """# Set saved image flag as global varible
-        global savedImageFlag
-        
-        # Path is correct save the image to the path and save result
-        saveStatus = self.imageDraw.save(self.filePath + "/" + self.name)
-        
-        # Check if file saved
-        if (saveStatus):
-            # Set image has been saved
-            savedImageFlag = True
-            
-            # Set icon as saved file
-            self.setWindowIcon(QtGui.QIcon(SAVED_ICON))
-            
-        else:
-            # Raise popup about wrong path
-            messagebox.showerror(title="Error", message="Wrong path was selected try again!")
-         """ 
         
       
     # method for saving canvas "save as"

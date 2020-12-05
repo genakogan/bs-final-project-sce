@@ -147,6 +147,9 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
         cnts = cv2.findContours(cv2.cvtColor(mask, cv2.COLOR_RGB2GRAY), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         cnts = imutils.grab_contours(cnts)
         
+        # Sort the contours by area largest first
+        cnts = sorted(cnts, key=cv2.contourArea, reverse=True)
+        
         # Run over the contours and test them by area
         for currCont in cnts:
             # Check if current contour's area is greater than maxSize
@@ -155,14 +158,19 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
                 cv2.drawContours(mask, [currCont], 0, (0, 0, 0), thickness = cv2.FILLED)
             # The contour is not greater than max
             else:
-                # Fill the shape with color that incremented by One each contour
-                cv2.drawContours(sizesMat, [currCont], 0, (nCounterShape, 0, 0), thickness = cv2.FILLED)
+                # Get the shape size value from the sizes matrix to check if it is part of other contour
+                nSizeVal = (sizesMat[currCont[0][0][0]][currCont[0][0][1]])[0]
                 
-                # Fill the borders of the shape with the same color for contour
-                cv2.drawContours(sizesMat, [currCont], 0, (nCounterShape, 0, 0), thickness = 2)
-                
-                # Increment contour shape by One
-                nCounterShape += 1
+                # Check if current contour is not inside any other contour
+                if (nSizeVal == 0):
+                    # Fill the shape with color that incremented by One each contour
+                    cv2.drawContours(sizesMat, [currCont], 0, (nCounterShape, 0, 0), thickness = cv2.FILLED)
+                    
+                    # Fill the borders of the shape with the same color for contour with thickness 4 to be sure that the contour points inside
+                    cv2.drawContours(sizesMat, [currCont], 0, (nCounterShape, 0, 0), thickness = 4)
+                    
+                    # Increment contour shape by One
+                    nCounterShape += 1
         
         return (convertMatrixToBool(npMask,mask))
         
@@ -255,9 +263,6 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
         # Find the objects that not large than max size
         mask = findMaskByMaxSize(mask, img, max_size)
 
-        # SLIC result
-        #slic = segmentation.slic(img, n_segments=1, start_label=1)
-
         # Check if the mask is not empty
         if (mask.all()):
             # Use maskSLIC result
@@ -275,9 +280,6 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
         
         # Create bone contour and save contour lines in contLines
         contLines = ax.contour(mask, colors='red', linewidths=0.5)
-        
-        # Get the image contour only
-        #cropContour(contLines, (width, height))
         
         # Disable axises in the result image
         plt.axis('off')
