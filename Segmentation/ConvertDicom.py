@@ -16,6 +16,16 @@ PATIENT_DETAILS_FILENAME    = 'Patient_Detail.csv'                              
 
 # The function gets folder path with dicom files and converts them to PNG
 def convertDCM(folder_path):
+    """
+    The function gets folder path with dicom files and converts all the images to PNG.
+    The function stores all patient data from the dicom files into excel file.
+    
+    Parameters:
+        folder_path     (String)    - Path to dicom files folder.
+        
+    Return:
+        None.
+    """
 
     # Set path to the dicom images directory
     dicom_files_in_dir = os.listdir(folder_path)
@@ -78,5 +88,3 @@ def convertDCM(folder_path):
             
             # Write patient data of the current image to the csv file
             writerPatient.writerow(rows)
-            
-#convertDCM("C:\\Users\\Aviel-PC\\Documents\\Final-Project\\Not in Git\\Dicom")
