@@ -7,9 +7,6 @@ import sys
 import uuid
 import base64
 import Notebook as note
-#IMAGE_EXTENSIONS = ['.jpg','.png','.bmp'] # Accepted image extensions
-#HTML_EXTENSIONS = ['.htm', '.html']  # Accepted file extensions
-
 class TE(QTextEdit):
     def canInsertFromMimeData(self, source):
         # Returns true if the object can return an image
