@@ -6,7 +6,7 @@ import os
 import sys
 import uuid
 import base64
-from TextEditNote import TE
+import TextEditNote as te
 # Global Variables
 IMAGE_EXTENSIONS = ['.jpg','.png','.bmp'] # Accepted image extensions
 HTML_EXTENSIONS = ['.htm', '.html']  # Accepted file extensions
@@ -22,7 +22,7 @@ class Note(QMainWindow):
         # QVBoxLayout Organizes your widgets vertically in a window
         layout = QVBoxLayout()
         # TE() class in TextEdit
-        self.editor = TE()
+        self.editor = te.TE()
         
         # Setup the QTextEdit editor configuration
         #self.editor.setAutoFormatting(QTextEdit.AutoAll)

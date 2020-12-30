@@ -6,6 +6,10 @@ import os
 import sys
 import uuid
 import base64
+import Notebook as note
+#IMAGE_EXTENSIONS = ['.jpg','.png','.bmp'] # Accepted image extensions
+#HTML_EXTENSIONS = ['.htm', '.html']  # Accepted file extensions
+
 class TE(QTextEdit):
     def canInsertFromMimeData(self, source):
         # Returns true if the object can return an image
@@ -18,8 +22,8 @@ class TE(QTextEdit):
         document = self.document()
         if source.hasUrls():
             for u in source.urls():
-                file_ext = splitext(str(u.toLocalFile()))
-                if u.isLocalFile() and file_ext in IMAGE_EXTENSIONS:
+                file_ext = note.splitext(str(u.toLocalFile()))
+                if u.isLocalFile() and file_ext in note.IMAGE_EXTENSIONS:
                     image = QImage(u.toLocalFile())
                     document.addResource(QTextDocument.ImageResource, u, image)
                     cursor.insertImage(u.toLocalFile())

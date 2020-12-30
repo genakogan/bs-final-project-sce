@@ -68,3 +68,9 @@ Date - 30/12/2020 14:02:15
 cannot import name 'QtsetLayouts' from 'PyQt5' (C:\Users\rgkog\Anaconda3\lib\site-packages\PyQt5\__init__.py)
 Date - 30/12/2020 14:02:16
 cannot import name 'QtsetLayouts' from 'PyQt5' (C:\Users\rgkog\Anaconda3\lib\site-packages\PyQt5\__init__.py)
+Date - 30/12/2020 21:40:02
+cannot import name 'te' from 'TextEditNote' (E:\Python\Final Project\Final-Project-SCE\Segmentation\TextEditNote.py)
+Date - 30/12/2020 21:40:06
+cannot import name 'te' from 'TextEditNote' (E:\Python\Final Project\Final-Project-SCE\Segmentation\TextEditNote.py)
+Date - 30/12/2020 21:40:12
+cannot import name 'te' from 'TextEditNote' (E:\Python\Final Project\Final-Project-SCE\Segmentation\TextEditNote.py)
