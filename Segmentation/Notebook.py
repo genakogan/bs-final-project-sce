@@ -16,9 +16,21 @@ FONT_SIZES = [7, 8, 9, 10, 11, 12, 13, 14, 18, 24, 36, 48, 64, 72, 96, 144, 288]
 
 
 class Note(QMainWindow):
-
-    def __init__(self, *args, **kwargs):
-        super(Note, self).__init__(*args, **kwargs)
+    """
+        Creating main window class for Notebook app
+    """
+    def __init__(self):
+      
+        """
+            Constructor
+            
+        Parameters:
+            self - current object
+            
+        Return:
+            None
+        """
+        super(Note, self).__init__()
         # QVBoxLayout Organizes your widgets vertically in a window
         layout = QVBoxLayout()
         # TE() class in TextEdit
@@ -221,17 +233,33 @@ class Note(QMainWindow):
         self.update_title()
         self.show()
     def block_signals(self, objects, b):
+       
         """
-        Blocking signals means stopping the button to do his assigned task.
-        It is used to make a button deactive.
+            Function can stopping the button to do his assigned task.
+      
+        Parameters:
+        objects : list
+            List of PyQt5.QtWidgets.QAction
+        b : bool
+              Returns True when the argument x is true, False otherwise.
+
+        Returns:
+            None
+
         """
         for o in objects:
             o.blockSignals(b)
     def updateFormat(self):
         """
-        Update the font format toolbar/actions when a new text selection is made. This is neccessary to keep
+           Update the font format toolbar/actions when a new text selection is made. This is neccessary to keep
         toolbars/etc. in sync with the current edit state.
-        :return:
+        
+        Parameters:
+            self - current object
+        
+        Returns:
+            None
+
         """
         # Disable signals for all format widgets, so changing values here does not trigger further formatting.
         self.block_signals(self._format_actions, True)
@@ -247,10 +275,24 @@ class Note(QMainWindow):
         self.aligncAction.setChecked(self.editor.alignment() == Qt.AlignCenter)
         self.alignrAction.setChecked(self.editor.alignment() == Qt.AlignRight)
         self.alignjAction.setChecked(self.editor.alignment() == Qt.AlignJustify)
-
+       
         self.block_signals(self._format_actions, False)
 
     def file_save(self):
+        """
+            Function can save existing files.
+        Existing files can be saved directly 
+        but this process does not allow a user 
+        to change any settings to the file creation process. 
+        If file do not have a path, function will redirect to "file_saveas" function.      
+        
+        Parameters:
+            self - the object
+        
+        Returns
+            None
+
+        """
         if self.path is None:
             # If we do not have a path, we need to use Save As.
             return self.file_saveas()
@@ -258,22 +300,36 @@ class Note(QMainWindow):
         text = self.editor.toHtml() if splitext(self.path) in HTML_EXTENSIONS else self.editor.toPlainText()
 
         try:
-            with open(self.path, 'w') as f:
+            with open(self.path, 'w',encoding="utf-8") as f:
                 f.write(text)
 
         except Exception as e:
             self.dialog_critical(str(e))
     
     def file_saveas(self):
+        """
+        The Save As function can save new file. 
+        After click on save as botton you will see the new window
+        with some option about where to save your file.
+        User can provide a name for the file to be created,
+        select a folder in which to place the new file, 
+        and select a file format type for the file.
+        
+        Parameters:
+            self - the object
+            
+        Returns:
+            None
+        """
         #getSaveFileName let you specify the default directory, filetypes and the default filename.
-        path, _ = QFileDialog.getSaveFileName(self, "Save file", "", "HTML documents (*.html);Text documents (*.txt);All files (*.*)")
+        path, _ = QFileDialog.getSaveFileName(self, "Save file", "", "HTML documents (*.html);;Text documents (*.txt);;All files (*.*)")
 
         if not path:
             # If dialog is cancelled, will return ''
             return
         text = self.editor.toHtml() if splitext(path) in HTML_EXTENSIONS else self.editor.toPlainText()
         try:
-            with open(path, 'w') as f:
+            with open(path, 'w',encoding="utf-8") as f:
                 f.write(text)
 
         except Exception as e:
@@ -282,10 +338,21 @@ class Note(QMainWindow):
             self.path = path
             self.update_title()
     def file_open(self):
-        path, _ = QFileDialog.getOpenFileName(self, "Open file", "", "HTML documents (*.html);Text documents (*.txt);All files (*.*)")
+        """
+        The File Open function can open existing file. 
+        After click on  botton you will see the new window
+        with some option about from where to open file
+        
+        Parameters:
+            self - the object
+        
+        Returns:
+            None
+        """
+        path, _ = QFileDialog.getOpenFileName(self, "Open file", "", "HTML documents (*.html);;Text documents (*.txt);;All files (*.*)")
         try:
             
-            with open(path, 'r',encoding="ISO-8859-1") as f:
+            with open(path, 'r',encoding="utf-8") as f:
                 text = f.read()
         except Exception as e:
             self.dialog_critical(str(e))
@@ -298,6 +365,19 @@ class Note(QMainWindow):
             
     # Function for exception message
     def dialog_critical(self, s):
+        """
+        This Function show information of Exception.
+        This information user can see in new open Window after catches exceptions.
+        
+        Parameters:
+        s : str
+           s    -    Exception message
+           self -   the object
+        
+        Returns:
+            None
+
+        """
         # The QMessageBox is a dialog that shows an informational message
         dlg = QMessageBox(self)
         # Text for exception window
@@ -306,14 +386,47 @@ class Note(QMainWindow):
         dlg.show()
             
     def update_title(self):
-        # Setting application name 
+        """
+            Setting application name 
+        
+        Parameters:
+            self - the object
+       
+        Returns:
+            None
+
+        """
         self.setWindowTitle("Notebook" )
 
+
+    
     def edit_toggle_wrap(self):
-        # Property holds the line wrap mode
+        
+        """
+           This function causes words to be wrapped at the right edge of the text edit. 
+        Wrapping occurs at whitespace, keeping whole words intact.
+        
+        Parameters:
+            self - the object
+       
+        Returns:
+            None
+
+        """
         self.editor.setLineWrapMode( 1 if self.editor.lineWrapMode() == 0 else 0 )
     
     def file_print(self):
+        """
+        Function can print text which was open or created in this app.
+        After click on button "Print"user can see new window which contain some option about.
+    
+        Parameters:
+            self - the object
+        
+        Returns:
+            None
+
+        """
         dlg = QPrintDialog()
         if dlg.exec_():
             self.editor.print_(dlg.printer())
@@ -321,10 +434,29 @@ class Note(QMainWindow):
 
         
 def hexuuid():
-    # Obtain a universally unique identifier (UUID) for an object.
+    """
+     Obtain a universally unique identifier (UUID) for an object.
+     uuid4() generates a random UUID
+    Returns:
+        TYPE:long int
+        
+
+    """
     return uuid.uuid4().hex
 # Split text
 def splitext(p):
+    """
+        Functiom gets name of file that will be saved and 
+        separates the file extension
+
+    Parameters:
+    p : str
+        Name of file
+    
+    Returns:   
+        str
+    File extension.
+    """
     return os.path.splitext(p)[1].lower()
 
 

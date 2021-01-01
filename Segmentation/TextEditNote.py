@@ -9,7 +9,17 @@ import base64
 import Notebook as note
 class TE(QTextEdit):
     def canInsertFromMimeData(self, source):
-        # Returns true if the object can return an image
+        
+        """
+            This function returns true if the object can return an image.
+        Parameters
+        ----------
+        source : PyQt5.QtCore.QMimeData 
+            QMimeData - class provides a container for data that records information about its MIME type.
+
+        Returns:
+            bool
+        """
         if source.hasImage():
             return True
         else:
@@ -18,6 +28,7 @@ class TE(QTextEdit):
         cursor = self.textCursor()
         document = self.document()
         if source.hasUrls():
+            print("ource.hasUrls()")
             for u in source.urls():
                 file_ext = note.splitext(str(u.toLocalFile()))
                 if u.isLocalFile() and file_ext in note.IMAGE_EXTENSIONS:
