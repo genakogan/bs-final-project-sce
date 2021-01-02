@@ -307,10 +307,6 @@ class Root(Tk):
             self.frameImage = Frame(self)
             self.frameImage.grid(column = 2, row = 0, sticky='nsew')
             
-             # Create frame for sliders
-            #self.frameSliders = Frame(self)
-            #self.frameSliders.grid(column = 2, row = 1, sticky='nsew')
-            
             # Create canvas for image
             self.imgCanvas = Canvas(self.frameImage, width = 500, height = 500)
             
