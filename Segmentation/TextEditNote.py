@@ -8,12 +8,14 @@ import uuid
 import base64
 import Notebook as note
 class TE(QTextEdit):
+    """
+    Class for isert data to notebook window 
+    """
     def canInsertFromMimeData(self, source):
         
         """
             This function returns true if the object can return an image.
-        Parameters
-        ----------
+        Parameters:
         source : PyQt5.QtCore.QMimeData 
             QMimeData - class provides a container for data that records information about its MIME type.
 
@@ -25,10 +27,23 @@ class TE(QTextEdit):
         else:
             return super(TE, self).canInsertFromMimeData(source)
     def insertFromMimeData(self, source):
+        """
+        
+           A function places the data in a window
+
+        Parameters:
+        source : PyQt5.QtCore.QMimeData 
+            QMimeData - class provides a container for data that records information about its MIME type.
+
+        Returns:
+            return - This is used for the same reason as break in loops.
+            The return value doesn't matter and you only want to exit the whole function.
+            It's extremely useful in some places, even though you don't need it that often.
+
+        """
         cursor = self.textCursor()
         document = self.document()
         if source.hasUrls():
-            print("ource.hasUrls()")
             for u in source.urls():
                 file_ext = note.splitext(str(u.toLocalFile()))
                 if u.isLocalFile() and file_ext in note.IMAGE_EXTENSIONS:

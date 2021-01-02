@@ -308,8 +308,8 @@ class Root(Tk):
             self.frameImage.grid(column = 2, row = 0, sticky='nsew')
             
              # Create frame for sliders
-            self.frameSliders = Frame(self)
-            self.frameSliders.grid(column = 2, row = 1, sticky='nsew')
+            #self.frameSliders = Frame(self)
+            #self.frameSliders.grid(column = 2, row = 1, sticky='nsew')
             
             # Create canvas for image
             self.imgCanvas = Canvas(self.frameImage, width = 500, height = 500)
@@ -376,30 +376,36 @@ class Root(Tk):
             self.tbAreaThreshold = Spinbox(self.frameImage, textvariable=varAreaThreshold, wrap=True, width=10, from_=0, to=10000)
             self.tbAreaThreshold.grid(row = 4, column = 2,rowspan=1, sticky='WE')
             
+            # Get number of rows in the image frame
+            nFrameRows = self.frameImage.grid_size()[1]
+            
+            # Set the row for buttons
+            nButtonsRow = nFrameRows
+            
             # Add button for segmentation Preview
             self.btnSegmentPreview = ttk.Button(self.frameImage, text="Preview", command=self.previewSegmentation)
             self.btnSegmentPreview.config(width=20)
-            self.btnSegmentPreview.grid(column = 1, row = 5, sticky='w')
+            self.btnSegmentPreview.grid(column = 1, row = nButtonsRow, sticky='sw')
             
             # Add button for clear segmentation values
             self.btnSegmentPreview = ttk.Button(self.frameImage, text="Reset Thresholds", command=self.resetThresholds)
             self.btnSegmentPreview.config(width=20)
-            self.btnSegmentPreview.grid(column = 2, row = 5, sticky='w')
+            self.btnSegmentPreview.grid(column = 2, row = nButtonsRow, sticky='sw')
             
             # Add button for image segmentation save
             self.btnSegmentPreview = ttk.Button(self.frameImage, text="Save", command=self.singleImageSegmentation)
             self.btnSegmentPreview.config(width=20)
-            self.btnSegmentPreview.grid(column = 3, row = 5, sticky='w')
+            self.btnSegmentPreview.grid(column = 3, row = nButtonsRow, sticky='sw')
             
             # Add button for image edit
             self.btnSegmentPreview = ttk.Button(self.frameImage, text="Edit", command=self.editImage)
             self.btnSegmentPreview.config(width=20)
-            self.btnSegmentPreview.grid(column = 4, row = 5, sticky='w')
+            self.btnSegmentPreview.grid(column = 4, row = nButtonsRow, sticky='sw')
             
             # Add button for next image
             self.btnNextImage = ttk.Button(self.frameImage, text="Next >", command=self.nextImage)
             self.btnNextImage.config(width=20)
-            self.btnNextImage.grid(column = 5, row = 5, sticky='w')
+            self.btnNextImage.grid(column = 5, row = nButtonsRow, sticky='sw')
             
             # Check if the current image is the last image then block the next button
             if (self.currentSelectedLine == len(all_items) - 1):
@@ -409,7 +415,7 @@ class Root(Tk):
             # Add button for previous image
             self.btnPrevImage = ttk.Button(self.frameImage, text="< Prev", command=self.prevImage)
             self.btnPrevImage.config(width=20)
-            self.btnPrevImage.grid(column = 0, row = 5, sticky='w')
+            self.btnPrevImage.grid(column = 0, row = nButtonsRow, sticky='sw')
             
             # Check if the current image is the first image then block the prev button
             if (self.currentSelectedLine <= 0):
@@ -832,4 +838,3 @@ if __name__ == "__main__":
     # Run the main GUI
     root = Root()
     root.mainloop()
-

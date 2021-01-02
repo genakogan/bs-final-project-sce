@@ -31,90 +31,117 @@ class Note(QMainWindow):
             None
         """
         super(Note, self).__init__()
+        
         # QVBoxLayout Organizes your widgets vertically in a window
         layout = QVBoxLayout()
+        
         # TE() class in TextEdit
         self.editor = te.TE()
         
         # Setup the QTextEdit editor configuration
         #self.editor.setAutoFormatting(QTextEdit.AutoAll)
         self.editor.selectionChanged.connect(self.updateFormat)
+        
         # Initialize default font size.
         font = QFont('Times', 12)
         self.editor.setFont(font)
+        
         # We need to repeat the size to init the current format.
         self.editor.setFontPointSize(12)
+        
         # self.path holds the path of the currently open file.
         # If none, we haven't got a file open yet (or creating new).
         self.path = None
+        
         # Insert widgets into a layout
         layout.addWidget(self.editor)
 
         # Create central window
         container = QWidget()
+        
         # SetLayout() function applies a layout to a widget
         container.setLayout(layout)
+        
         #Sets the given widget to be the main window's central widget.
         self.setCentralWidget(container)
+        
         # QStatusBar class provides a horizontal bar suitable for presenting status information.
         self.status = QStatusBar()
+        
         # Add status bar in left side of window
         self.setStatusBar(self.status)
+        
         # A QToolBar widget is a movable panel consisting of text buttons, buttons with icons or other widgets
         fileToolbar = QToolBar("File")
+        
         # In order to change the icon size of items icon we will use setIconSize method.
         fileToolbar.setIconSize(QSize(14, 14))
+        
         # Add toolbar - Open file, Save, Sava as, Print
         self.addToolBar(fileToolbar)
+        
         # Add a horizontal bar with buttons items, typically file menu and others.
         fileMenu = self.menuBar().addMenu("&File")
+        
         # Add "Open file" action to the Toolbars
         openFileAction = QAction(QIcon(os.path.join('images', 'blue-folder-open-document.png')), "Open file...", self)
+        
         # Status tip is basically text set by the developer to give the tip(information)
         # About the spin box state to other developers.
         openFileAction.setStatusTip("Open file")
+        
         # To connect an method with it when triggered signal is emitted
         openFileAction.triggered.connect(self.file_open)
         fileMenu.addAction(openFileAction)
         fileToolbar.addAction(openFileAction)
+        
         # Add "Save" action to the Toolbars
         saveFileAction = QAction(QIcon(os.path.join('images', 'disk.png')), "Save", self)
         saveFileAction.setStatusTip("Save current page")
         saveFileAction.triggered.connect(self.file_save)
         fileMenu.addAction(saveFileAction)
         fileToolbar.addAction(saveFileAction)
+        
         # Add "Save as" action to the Toolbars
         saveasFileAction = QAction(QIcon(os.path.join('images', 'disk--pencil.png')), "Save As...", self)
         saveasFileAction.setStatusTip("Save current page to specified file")
         saveasFileAction.triggered.connect(self.file_saveas)
         fileMenu.addAction(saveasFileAction)
         fileToolbar.addAction(saveasFileAction)
+        
         # Add "Print" action to the Toolbars
         printAction = QAction(QIcon(os.path.join('images', 'printer.png')), "Print...", self)
         printAction.setStatusTip("Print current page")
         printAction.triggered.connect(self.file_print)
         fileMenu.addAction(printAction)
         fileToolbar.addAction(printAction)
+        
         # A movable panel for "Edit" options - redo, cut, copy, paste
         editToolbar = QToolBar("Edit")
+        
         # Size of "Edit" panel
         editToolbar.setIconSize(QSize(16, 16))
         self.addToolBar(editToolbar)
+        
         # Add a horizontal bar with buttons items, typically file menu and others.
         editMenu = self.menuBar().addMenu("&Edit")
+        
         # Add "Undo" to the "Edit" menu
         undoAction = QAction(QIcon(os.path.join('images', 'arrow-curve-180-left.png')), "Undo", self)
         undoAction.setStatusTip("Undo last change")
         undoAction.triggered.connect(self.editor.undo)
         editMenu.addAction(undoAction)
+        
         # Add "Redo" to the "Edit" menu
         redoAction = QAction(QIcon(os.path.join('images', 'arrow-curve.png')), "Redo", self)
         redoAction.setStatusTip("Redo last change")
         redoAction.triggered.connect(self.editor.redo)
         editToolbar.addAction(redoAction)
         editMenu.addAction(redoAction)
+        
         # Add seporator betwen 
         editMenu.addSeparator()
+        
         # Add "Cur" to the "Edit" menu
         cutAction = QAction(QIcon(os.path.join('images', 'scissors.png')), "Cut", self)
         cutAction.setStatusTip("Cut selected text")
@@ -122,6 +149,7 @@ class Note(QMainWindow):
         cutAction.triggered.connect(self.editor.cut)
         editToolbar.addAction(cutAction)
         editMenu.addAction(cutAction)
+        
         # Add "Copy" to the "Edit" menu
         copyAction = QAction(QIcon(os.path.join('images', 'document-copy.png')), "Copy", self)
         copyAction.setStatusTip("Copy selected text")
@@ -129,6 +157,7 @@ class Note(QMainWindow):
         copyAction.triggered.connect(self.editor.copy)
         editToolbar.addAction(copyAction)
         editMenu.addAction(copyAction)
+        
         # Add "Paste" to the "Edit" menu
         pasteAction = QAction(QIcon(os.path.join('images', 'clipboard-paste-document-text.png')), "Paste", self)
         pasteAction.setStatusTip("Paste from clipboard")
@@ -136,14 +165,17 @@ class Note(QMainWindow):
         pasteAction.triggered.connect(self.editor.paste)
         editToolbar.addAction(pasteAction)
         editMenu.addAction(pasteAction)
+        
         # Add "Select all" to the "Edit" menu
         selectAction = QAction(QIcon(os.path.join('images', 'selection-input.png')), "Select all", self)
         selectAction.setStatusTip("Select all text")
         cutAction.setShortcut(QKeySequence.SelectAll)
         selectAction.triggered.connect(self.editor.selectAll)
         editMenu.addAction(selectAction)
+        
         # Add seporator betwen 
         editMenu.addSeparator()
+        
         # Add "Wrap text to window" to the "Edit" menu
         wrapAction = QAction(QIcon(os.path.join('images', 'arrow-continue.png')), "Wrap text to window", self)
         wrapAction.setStatusTip("Toggle wrap text to window")
@@ -151,26 +183,33 @@ class Note(QMainWindow):
         wrapAction.setChecked(True)
         wrapAction.triggered.connect(self.edit_toggle_wrap)
         editMenu.addAction(wrapAction)
+        
         # A movable panel for "Format" options - redo, cut, copy, paste
         formatToolbar = QToolBar("Format")
         formatToolbar.setIconSize(QSize(16, 16))
         self.addToolBar(formatToolbar)
+        
         # We need references to these actions/settings to update as selection changes, so attach to self.
         self.fonts = QFontComboBox()
         self.fonts.currentFontChanged.connect(self.editor.setCurrentFont)
         formatToolbar.addWidget(self.fonts)
+        
         # QComboBox is a widget in PyQt5 which is used to choose from a list.
         self.fontsize = QComboBox()
+        
         # Choose font sizes
         self.fontsize.addItems([str(s) for s in FONT_SIZES])
+        
         # Connect to the signal producing the text of the current selection. Convert the string to float
         # and set as the pointsize. We could also use the index + retrieve from FONT_SIZES.
         self.fontsize.currentIndexChanged[str].connect(lambda s: self.editor.setFontPointSize(float(s)) )
         formatToolbar.addWidget(self.fontsize)
+        
         # Setting "Bold" button
         self.boldAction = QAction(QIcon(os.path.join('images', 'edit-bold.png')), "Bold", self)
         self.boldAction.setStatusTip("Bold")
         self.boldAction.setShortcut(QKeySequence.Bold)
+        
         # Setting "Italic" button
         self.italicAction = QAction(QIcon(os.path.join('images', 'edit-italic.png')), "Italic", self)
         self.italicAction.setStatusTip("Italic")
@@ -178,12 +217,14 @@ class Note(QMainWindow):
         self.italicAction.setCheckable(True)
         self.italicAction.toggled.connect(self.editor.setFontItalic)
         formatToolbar.addAction(self.italicAction)
+        
         # Setting "Align left" button
         self.alignlAction = QAction(QIcon(os.path.join('images', 'edit-alignment.png')), "Align left", self)
         self.alignlAction.setStatusTip("Align text left")
         self.alignlAction.setCheckable(True)
         self.alignlAction.triggered.connect(lambda: self.editor.setAlignment(Qt.AlignLeft))
         formatToolbar.addAction(self.alignlAction)
+        
         # Setting "Underline" button
         self.underlineAction = QAction(QIcon(os.path.join('images', 'edit-underline.png')), "Underline", self)
         self.underlineAction.setStatusTip("Underline")
@@ -191,26 +232,31 @@ class Note(QMainWindow):
         self.underlineAction.setCheckable(True)
         self.underlineAction.toggled.connect(self.editor.setFontUnderline)
         formatToolbar.addAction(self.underlineAction)
+        
         # Setting "Align left" button
         self.aligncAction = QAction(QIcon(os.path.join('images', 'edit-alignment-center.png')), "Align center", self)
         self.aligncAction.setStatusTip("Align text center")
         self.aligncAction.setCheckable(True)
         self.aligncAction.triggered.connect(lambda: self.editor.setAlignment(Qt.AlignCenter))
         formatToolbar.addAction(self.aligncAction)
+        
         # Setting "Align right" button
         self.alignrAction = QAction(QIcon(os.path.join('images', 'edit-alignment-right.png')), "Align right", self)
         self.alignrAction.setStatusTip("Align text right")
         self.alignrAction.setCheckable(True)
         self.alignrAction.triggered.connect(lambda: self.editor.setAlignment(Qt.AlignRight))
         formatToolbar.addAction(self.alignrAction)
+        
         # Setting "Justify" button
         self.alignjAction = QAction(QIcon(os.path.join('images', 'edit-alignment-justify.png')), "Justify", self)
         self.alignjAction.setStatusTip("Justify text")
         self.alignjAction.setCheckable(True)
         self.alignjAction.triggered.connect(lambda: self.editor.setAlignment(Qt.AlignJustify))
         formatToolbar.addAction(self.alignjAction)
+        
         # Represent each command as an action
         formatGroup = QActionGroup(self)
+        
         #If this property is true, then only one button in the group can be checked at any given time. 
         #The user can click on any button to check it, and that button will replace the
         #existing one as the checked button in the group
@@ -219,6 +265,7 @@ class Note(QMainWindow):
         formatGroup.addAction(self.aligncAction)
         formatGroup.addAction(self.alignrAction)
         formatGroup.addAction(self.alignjAction)
+        
         # A list of all format-related widgets/actions, so we can disable/enable signals when updating.
         self._format_actions = [
             self.fonts,
@@ -228,6 +275,7 @@ class Note(QMainWindow):
             self.underlineAction,
             # We don't need to disable signals for alignment, as they are paragraph-wide.
         ]
+        
         # Initialize.
         self.updateFormat()
         self.update_title()
@@ -265,8 +313,10 @@ class Note(QMainWindow):
         self.block_signals(self._format_actions, True)
 
         self.fonts.setCurrentFont(self.editor.currentFont())
+        
         # Nasty, but we get the font-size as a float but want it was an int
         self.fontsize.setCurrentText(str(int(self.editor.fontPointSize())))
+        
         # SetChecked method is used to change the state of check box
         self.italicAction.setChecked(self.editor.fontItalic())
         self.underlineAction.setChecked(self.editor.fontUnderline())
@@ -275,15 +325,14 @@ class Note(QMainWindow):
         self.aligncAction.setChecked(self.editor.alignment() == Qt.AlignCenter)
         self.alignrAction.setChecked(self.editor.alignment() == Qt.AlignRight)
         self.alignjAction.setChecked(self.editor.alignment() == Qt.AlignJustify)
-       
+        
         self.block_signals(self._format_actions, False)
 
     def file_save(self):
         """
             Function can save existing files.
         Existing files can be saved directly 
-        but this process does not allow a user 
-        to change any settings to the file creation process. 
+        without changing path and name of image.
         If file do not have a path, function will redirect to "file_saveas" function.      
         
         Parameters:
@@ -294,6 +343,7 @@ class Note(QMainWindow):
 
         """
         if self.path is None:
+            
             # If we do not have a path, we need to use Save As.
             return self.file_saveas()
 
@@ -321,10 +371,12 @@ class Note(QMainWindow):
         Returns:
             None
         """
+        
         #getSaveFileName let you specify the default directory, filetypes and the default filename.
         path, _ = QFileDialog.getSaveFileName(self, "Save file", "", "HTML documents (*.html);;Text documents (*.txt);;All files (*.*)")
 
         if not path:
+            
             # If dialog is cancelled, will return ''
             return
         text = self.editor.toHtml() if splitext(path) in HTML_EXTENSIONS else self.editor.toPlainText()
@@ -359,6 +411,7 @@ class Note(QMainWindow):
 
         else:
             self.path = path
+            
             # Qt will automatically try and guess the format as txt/html
             self.editor.setText(text)
             self.update_title()
@@ -380,6 +433,7 @@ class Note(QMainWindow):
         """
         # The QMessageBox is a dialog that shows an informational message
         dlg = QMessageBox(self)
+        
         # Text for exception window
         dlg.setText(s)
         dlg.setIcon(QMessageBox.Critical)
@@ -439,10 +493,9 @@ def hexuuid():
      uuid4() generates a random UUID
     Returns:
         TYPE:long int
-        
-
     """
     return uuid.uuid4().hex
+
 # Split text
 def splitext(p):
     """

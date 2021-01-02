@@ -26,8 +26,23 @@ savedAsFileName     = ""
 
 # window class 
 class PaintApp(QMainWindow):
+    """
+    Paint Class for changing imagin
+    """
     
     def __init__(self, fileName,fileP): 
+        
+        """
+            Constructor
+            
+        Parameters:
+            self     - current object
+            fileName - name of file
+            fileP    - path of file
+            
+        Return:
+            None
+        """
         super().__init__() 
         
         # Set global variables
@@ -204,6 +219,18 @@ class PaintApp(QMainWindow):
         
     # method for checking mouse cicks 
     def mousePressEvent(self, event):
+        """
+        Method describes a mouse press event
+
+        Parameters:
+            self  - the object
+            event - mouse move event
+           
+        Returns:
+            None.
+
+        """ 
+    
         # Set icon of the windows as unsaved image
         self.setWindowIcon(QtGui.QIcon(UNSAVED_ICON)) 
         
@@ -233,6 +260,18 @@ class PaintApp(QMainWindow):
             self.lastPoint = scaledPoint
         
     def mouseMoveEvent(self, event):
+        """
+        Method describes a mouse move event
+
+        Parameters:
+            self  - the object
+            event - mouse move event
+           
+        Returns:
+            None.
+
+        """ 
+        
         # If moveing the mose
         if event.buttons() and QtCore.Qt.LeftButton and self.drawing:
             painter = QtGui.QPainter(self.imageDraw)
@@ -260,6 +299,17 @@ class PaintApp(QMainWindow):
           
     # method for mouse left button release 
     def mouseReleaseEvent(self, event): 
+        """
+        Method describes a mouse relese event
+
+        Parameters:
+            self  - the object
+            event - mouse move event
+           
+        Returns:
+            None.
+
+        """ 
         
         # Check if button was released the drwaing stopped
         if event.button() == QtCore.Qt.LeftButton: 
@@ -276,6 +326,18 @@ class PaintApp(QMainWindow):
             self.redoAction.setDisabled(True)
        
     def paintEvent(self, event):
+        """
+        Method gets drawing permission
+
+        Parameters:
+            self  - the object
+            event - mouse move event
+           
+        Returns:
+            None.
+
+        """ 
+        
         # Create canvas for the image
         canvasPainter = QPainter(self)
         
@@ -284,6 +346,19 @@ class PaintApp(QMainWindow):
     
     # The function saves the image into the selected path and name
     def saveFileOperation(self, path):
+        
+        """
+        Method can save image into the selected path and name
+
+        Parameters:
+            self  - the object
+            path - selected path of image
+           
+        Returns:
+            None.
+
+        """ 
+        
         # Set saved image flag as global varible
         global savedImageFlag
         
@@ -304,6 +379,19 @@ class PaintApp(QMainWindow):
         
     # method for "save" option from file menu
     def save(self):
+        """
+           Method can save existing files.
+        Existing files can be saved directly 
+        without changing path and name of image.
+        
+        Parameters:
+            self  - the object
+
+        Returns:
+            None.
+
+        """
+        
         # Create the path with file name to save
         strPath = self.filePath + "/" + self.name
         
@@ -326,6 +414,18 @@ class PaintApp(QMainWindow):
       
     # method for saving canvas "save as"
     def saveAs(self):
+        """
+           Method can save existing files.
+        Existing files can be saved after
+        choosing path path and name of image.
+        
+        Parameters:
+            self  - the object
+           
+        Returns:
+            None.
+
+        """
         # Set global variables
         global savedAsImageFlag
         global savedAsPath
@@ -359,6 +459,18 @@ class PaintApp(QMainWindow):
    
     # method for clearing every thing on canvas 
     def clear(self): 
+        """
+           Method  for clearing every thing on canvas
+           after using brush
+        
+        Parameters:
+            self  - the object
+           
+        Returns:
+            None.
+
+        """
+        
         # Change the icon for unsaved image
         self.setWindowIcon(QtGui.QIcon(UNSAVED_ICON))
         
@@ -378,6 +490,17 @@ class PaintApp(QMainWindow):
         
     # Undo method
     def undo(self):
+        """
+           The Undo command allows you to discard the most recent change.
+        
+        Parameters:
+            self  - the object
+           
+        Returns:
+            None.
+
+        """
+        
         self.setWindowIcon(QtGui.QIcon(UNSAVED_ICON))
         # Backup current version for redo
         self.redoDraw.append(self.imageDraw.copy())
@@ -398,6 +521,18 @@ class PaintApp(QMainWindow):
         
     # Redo method
     def redo(self):
+        
+        """
+          The Redo command reverses the most recent change made using Undo.
+        
+        Parameters:
+            self  - the object
+           
+        Returns:
+            None.
+
+        """
+        
         self.setWindowIcon(QtGui.QIcon(UNSAVED_ICON))
         # Backup current version for undo
         self.undoDraw.append(self.imageDraw.copy())
@@ -418,25 +553,103 @@ class PaintApp(QMainWindow):
         
     # methods for changing pixel sizes 
     def Pixel_4(self): 
+        """
+            changing pixel sizes in brush. 
+        Size = 4
+        
+        Parameters:
+            self  - the object
+            
+        Returns:
+            None
+
+        """
         self.brushSize = 4
   
     def Pixel_7(self): 
+        """
+            changing pixel sizes in brush. 
+        Size = 7
+        
+        Parameters:
+            self  - the object
+            
+        Returns:
+            None
+
+        """
         self.brushSize = 7
   
     def Pixel_9(self): 
+        """
+            changing pixel sizes in brush. 
+        Size = 9
+        
+        Parameters:
+            self  - the object
+            
+        Returns:
+            None
+
+        """
         self.brushSize = 9
   
     def Pixel_12(self): 
+        """
+            changing pixel sizes in brush. 
+        Size = 12
+        
+        Parameters:
+            self  - the object
+            
+        Returns:
+            None
+
+        """
         self.brushSize = 12
   
     # methods for changing brush color 
     def blackColor(self): 
+        """
+            Сhanging colour of brush. 
+        Colour = black
+        
+        Parameters:
+            self  - the object
+            
+        Returns:
+            None
+
+        """
         self.brushColor = Qt.black 
   
     def whiteColor(self): 
+        """
+            Сhanging colour of brush. 
+        Colour = white
+        
+        Parameters:
+            self  - the object
+            
+        Returns:
+            None
+
+        """
+        
         self.brushColor = Qt.white 
     
     def redColor(self): 
+        """
+            Сhanging colour of brush. 
+        Colour = red
+        
+        Parameters:
+            self  - the object
+            
+        Returns:
+            None
+
+        """
         self.brushColor = Qt.red
   
 paintApp = QApplication(sys.argv)
