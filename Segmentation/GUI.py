@@ -40,10 +40,13 @@ THRESHOLD_INDX          = 1             # Index for threshold in the list inside
 MIN_SIZE_INDX           = 2             # Index for min size in the list inside dictionary of files
 AREA_SIZE_INDX          = 3             # Index for area size in the list inside dictionary of files
 MAX_SIZE_INDX           = 4             # Index for max size in the list inside dictionary of files
+CONFIGURED_INDX         = 5             # Index for flag if the image configured or default values saved
 PROGRESS_BAR_LENGTH     = 300           # Length of progressbar window
 PROGRESS_BAR_WIDTH      = 50            # Width of progressbar window
 PROGRESS_BAR_PERCENTAGE = 100.0         # Percent of progress bar set to 100
 PROGRESS_BAR_INIT       = 0             # value for reseting progress bar to progress Zero
+IMG_NOT_OPEN_FLAG       = 0             # Flag if user didn't open image yet
+IMG_ALREADY_OPEN_FLAG   = 1             # Flag if user already opend image
 PROGRAM_PATH            = getcwd()      # Get path of the py files
 DOCUMENTATION_FILE      = PROGRAM_PATH + '/Documentation/GKAR.pdf'  # Get documentation file path
 ACCEPTED_EXTENSIONS     = ('jpg', 'jpeg', 'tif', 'tiff', 'png')     # Accepted file extensions
@@ -83,7 +86,16 @@ class Root(Tk):
         self.imageSelectPanel()
         
         # Disable resize of the window
-        self.resizable(False, False)   
+        self.resizable(False, False)
+        
+        # Set flag for already chosen image
+        self.imgAlreadyOpen = IMG_NOT_OPEN_FLAG
+        
+        # Set default threshold currently set for application
+        self.default_threshold = DEFAULT_THRESHOLD
+        self.default_area_size = DEFAULT_AREA_SIZE
+        self.default_min_size = DEFAULT_MIN_SIZE
+        self.default_max_size = DEFAULT_MAX_SIZE
        
     def upperMenu(self):
         """
@@ -123,6 +135,21 @@ class Root(Tk):
         # Add exit button to File menu
         fileMenu.add_command(label='Exit', command = self.programExit, accelerator="Ctrl+Q")
         self.bind_all("<Control-q>", self.programExit)
+        
+         # ==================  Edit Menu
+        
+        # Create edit button for the upper menu
+        self.editMenu = Menu(self.menu, tearoff=False)
+        
+        # Add the edit menu to the upper menu
+        self.menu.add_cascade(label='Edit', menu=self.editMenu)
+        self.config(menu=self.menu)
+        
+        # Add button for save current values to default thresholds
+        self.editMenu.add_command(label='Set Default Thresholds', state = 'disabled', command = self.setNewDefault)
+        
+        # Add button for reset the default thresholds to program default
+        self.editMenu.add_command(label='Reset Default Thresholds', state = 'disabled', command = self.resetDefaultValues)
         
         # ==================  Help Menu
         
@@ -296,6 +323,11 @@ class Root(Tk):
             None
         """
         
+        # Check if already image opend then 
+        if(self.imgAlreadyOpen == IMG_ALREADY_OPEN_FLAG):
+            # Image already exists then destroy the frame to create new one for new image
+            self.frameImage.destroy()
+               
         # Set the current file with path
         self.currentFile = all_items[zImgIndx]
         
@@ -378,35 +410,7 @@ class Root(Tk):
             # Set the row for buttons
             nButtonsRow = nFrameRows
             
-            # Add button for segmentation Preview
-            self.btnSegmentPreview = ttk.Button(self.frameImage, text="Preview", command=self.previewSegmentation)
-            self.btnSegmentPreview.config(width=20)
-            self.btnSegmentPreview.grid(column = 1, row = nButtonsRow, sticky='sw')
-            
-            # Add button for clear segmentation values
-            self.btnSegmentPreview = ttk.Button(self.frameImage, text="Reset Thresholds", command=self.resetThresholds)
-            self.btnSegmentPreview.config(width=20)
-            self.btnSegmentPreview.grid(column = 2, row = nButtonsRow, sticky='sw')
-            
-            # Add button for image segmentation save
-            self.btnSegmentPreview = ttk.Button(self.frameImage, text="Save", command=self.singleImageSegmentation)
-            self.btnSegmentPreview.config(width=20)
-            self.btnSegmentPreview.grid(column = 3, row = nButtonsRow, sticky='sw')
-            
-            # Add button for image edit
-            self.btnSegmentPreview = ttk.Button(self.frameImage, text="Edit", command=self.editImage)
-            self.btnSegmentPreview.config(width=20)
-            self.btnSegmentPreview.grid(column = 4, row = nButtonsRow, sticky='sw')
-            
-            # Add button for next image
-            self.btnNextImage = ttk.Button(self.frameImage, text="Next >", command=self.nextImage)
-            self.btnNextImage.config(width=20)
-            self.btnNextImage.grid(column = 5, row = nButtonsRow, sticky='sw')
-            
-            # Check if the current image is the last image then block the next button
-            if (self.currentSelectedLine == len(all_items) - 1):
-                # Disable the next button
-                self.btnNextImage.config(state=DISABLED)
+            # -------- Buttons first line --------
             
             # Add button for previous image
             self.btnPrevImage = ttk.Button(self.frameImage, text="< Prev", command=self.prevImage)
@@ -418,6 +422,38 @@ class Root(Tk):
                 # Disable the prev button
                 self.btnPrevImage.config(state=DISABLED)
             
+            # Add button for segmentation Preview
+            self.btnSegmentPreview = ttk.Button(self.frameImage, text="Preview", command=self.previewSegmentation)
+            self.btnSegmentPreview.config(width=20)
+            self.btnSegmentPreview.grid(column = 1, row = nButtonsRow, sticky='sw')
+            
+            # Add button for clear segmentation values
+            self.btnResetToDefault = ttk.Button(self.frameImage, text="Reset Thresholds", command=self.resetThresholds)
+            self.btnResetToDefault.config(width=20)
+            self.btnResetToDefault.grid(column = 2, row = nButtonsRow, sticky='sw')
+            
+            # Add button for image segmentation save
+            self.btnSingleSegment = ttk.Button(self.frameImage, text="Save", command=self.singleImageSegmentation)
+            self.btnSingleSegment.config(width=20)
+            self.btnSingleSegment.grid(column = 3, row = nButtonsRow, sticky='sw')
+            
+            # Add button for image edit
+            self.btnImgEdit = ttk.Button(self.frameImage, text="Edit", command=self.editImage)
+            self.btnImgEdit.config(width=20)
+            self.btnImgEdit.grid(column = 4, row = nButtonsRow, sticky='sw')
+            
+            # Add button for next image
+            self.btnNextImage = ttk.Button(self.frameImage, text="Next >", command=self.nextImage)
+            self.btnNextImage.config(width=20)
+            self.btnNextImage.grid(column = 5, row = nButtonsRow, sticky='sw')
+            
+            # Check if the current image is the last image then block the next button
+            if (self.currentSelectedLine == len(all_items) - 1):
+                # Disable the next button
+                self.btnNextImage.config(state=DISABLED)
+            
+            # -------- Evenets buttons ---------
+            
             # Scroll image using mouse wheel
             self.imgCanvas.bind("<MouseWheel>",self.zoomer)
             
@@ -425,6 +461,13 @@ class Root(Tk):
             self.imgCanvas.bind("<ButtonPress-1>", self.move_start)
             self.imgCanvas.bind("<B1-Motion>", self.move_move)
             
+            # Open edit menu buttons if successfully opend image
+            self.editMenu.entryconfig("Set Default Thresholds", state="normal")
+            self.editMenu.entryconfig("Reset Default Thresholds", state="normal")
+            
+            # Set image open flag as true
+            self.imgAlreadyOpen = IMG_ALREADY_OPEN_FLAG
+                        
         except IOError:
             print(IOError.message)
             
@@ -521,7 +564,7 @@ class Root(Tk):
         
         try:
             # Prepare list with configuration for image
-            lstConfigImg = [seg.imageConfigSegment(currentFile, threshold, minSizeVal, areaVal, maxSizeVal), threshold, minSizeVal, areaVal, maxSizeVal]
+            lstConfigImg = [seg.imageConfigSegment(currentFile, threshold, minSizeVal, areaVal, maxSizeVal), threshold, minSizeVal, areaVal, maxSizeVal, True]
             
             # Save the parameters for the image
             self.dictFilesSegment[self.currentFile] = lstConfigImg
@@ -550,10 +593,10 @@ class Root(Tk):
         """
         
         # Reset values for thresholds
-        self.threshold.set(DEFAULT_THRESHOLD)
-        self.minSizeVal.set(DEFAULT_MIN_SIZE)
-        self.areaVal.set(DEFAULT_AREA_SIZE)
-        self.maxSizeVal.set(DEFAULT_MAX_SIZE)
+        self.threshold.set(self.default_threshold)
+        self.minSizeVal.set(self.default_min_size)
+        self.areaVal.set(self.default_area_size)
+        self.maxSizeVal.set(self.default_max_size)
         
     def loadImagesInPath(self):
         """
@@ -590,7 +633,7 @@ class Root(Tk):
             self.lbFiles.insert(nImgIndex,image)
             
             # Save images into dictionary in order to perform segmentation
-            self.dictFilesSegment[image] = [seg.imageConfigSegment(self.path + '/' + image), DEFAULT_THRESHOLD, DEFAULT_MIN_SIZE, DEFAULT_AREA_SIZE, DEFAULT_MAX_SIZE]
+            self.dictFilesSegment[image] = [seg.imageConfigSegment(self.path + '/' + image), self.default_threshold, self.default_min_size, self.default_area_size, self.default_max_size, False]
             
             # Increment the index
             nImgIndex = nImgIndex + 1
@@ -696,6 +739,18 @@ class Root(Tk):
             
             # Load all the images in the current selected path into the listbox
             self.loadImagesInPath()
+            
+            # Check if already image opend then 
+            if(self.imgAlreadyOpen == IMG_ALREADY_OPEN_FLAG):
+                # Image already exists then destroy the frame to create new one for new image
+                self.frameImage.destroy()
+                
+                # As image not selected disable all the buttons that use open image panel
+                self.editMenu.entryconfig("Set Default Thresholds", state="disabled")
+                self.editMenu.entryconfig("Reset Default Thresholds", state="disabled")
+                
+            # Change image already opend to not opend image
+            self.imgAlreadyOpen = IMG_NOT_OPEN_FLAG
             
     def performSegmentation(self):
         """
@@ -826,7 +881,76 @@ class Root(Tk):
             
             # Show message about successful segmentation
             messagebox.showinfo(title="Segmentation completed!", message="Segmentation of " + self.currentFile + " completed!")
-
+    
+    def setNewValuesForImages(self):
+        """
+        The function runs over all the files in the directory and if the image is not configured by the user,
+        then the program resets the parameters to the new parameters.
+        
+        Parameters:
+            None
+        
+        Return:
+            None
+        """
+        
+        # Run over all the images in path to set the new defualt if not already changed value
+        for image in self.dictFilesSegment:
+            # Check if values not yet changed by the user changed
+            if (self.dictFilesSegment[image][CONFIGURED_INDX] == False):
+                # Change images into values in order to perform segmentation
+                self.dictFilesSegment[image] = [seg.imageConfigSegment(self.path + '/' + image, self.default_threshold, self.default_min_size, self.default_area_size, self.default_max_size), self.default_threshold, self.default_min_size, self.default_area_size, self.default_max_size, False]
+    
+    def setNewDefault(self):
+        """
+        The function sets the new values as default values
+        
+        Parameters:
+            self - the object
+        
+        Return:
+            None
+        """
+        
+        # Check if user really want to set new default
+        MsgBox = messagebox.askquestion ('Change Default Values','Are you sure you want to change the default thresholds?',icon = 'question')
+        
+        # Check if yes selected by the user
+        if MsgBox == 'yes':
+            # Set new default values
+            self.default_threshold = self.threshold.get()
+            self.default_area_size = self.areaVal.get()
+            self.default_min_size = self.minSizeVal.get()
+            self.default_max_size = self.maxSizeVal.get()
+            
+            # Set the new default value for all images that not configured by the user
+            self.setNewValuesForImages()
+    
+    def resetDefaultValues(self):
+        """
+        The function resets the default values to the program default
+        
+        Parameters:
+            self - the object
+        
+        Return:
+            None
+        """
+        
+        # Check if user really want to reset default values
+        MsgBox = messagebox.askquestion ('Change Default Values','Are you sure you want to reset back to the default thresholds?',icon = 'question')
+        
+        # Check if yes selected by the user
+        if MsgBox == 'yes':
+            # Set new default values
+            self.default_threshold = DEFAULT_THRESHOLD
+            self.default_area_size = DEFAULT_AREA_SIZE
+            self.default_min_size = DEFAULT_MIN_SIZE
+            self.default_max_size = DEFAULT_MAX_SIZE
+            
+            # Set the new default value for all images that not configured by the user
+            self.setNewValuesForImages()
+        
 # Check if we are running the module from the main scope
 if __name__ == "__main__":
     # Execute only if run from the main file and not as import
