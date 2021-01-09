@@ -96,6 +96,9 @@ class Root(Tk):
         self.default_area_size = DEFAULT_AREA_SIZE
         self.default_min_size = DEFAULT_MIN_SIZE
         self.default_max_size = DEFAULT_MAX_SIZE
+        
+        # List to store the names of tested files
+        self.lstTestedFiles = []
        
     def upperMenu(self):
         """
@@ -145,11 +148,20 @@ class Root(Tk):
         self.menu.add_cascade(label='Edit', menu=self.editMenu)
         self.config(menu=self.menu)
         
+        # Add button for sort ascending
+        self.editMenu.add_command(label='Sort Ascending', state = DISABLED, command = self.sortAsc)
+        
+        # Add button for sort descending
+        self.editMenu.add_command(label='Sort Descending', state = DISABLED, command = self.sortDesc)
+        
+        # Add separator for the Documentation button
+        self.editMenu.add_separator()
+        
         # Add button for save current values to default thresholds
-        self.editMenu.add_command(label='Set Default Thresholds', state = 'disabled', command = self.setNewDefault)
+        self.editMenu.add_command(label='Set Default Thresholds', state = DISABLED, command = self.setNewDefault)
         
         # Add button for reset the default thresholds to program default
-        self.editMenu.add_command(label='Reset Default Thresholds', state = 'disabled', command = self.resetDefaultValues)
+        self.editMenu.add_command(label='Reset Default Thresholds', state = DISABLED, command = self.resetDefaultValues)
         
         # ==================  Help Menu
         
@@ -335,6 +347,9 @@ class Root(Tk):
             # Mark the image as already selected
             self.lbFiles.itemconfig(zImgIndx, bg=TESTED_IMGS_COLOR)
             
+            # Add the image index to list of tested files
+            self.lstTestedFiles.append(self.currentFile)
+            
             # Create frame for image
             self.frameImage = Frame(self)
             self.frameImage.grid(column = 2, row = 0, sticky='nsew')
@@ -358,11 +373,26 @@ class Root(Tk):
             # Configure scroll area for image
             self.imgCanvas.configure(scrollregion = self.imgCanvas.bbox("all"))
             
+            # Define variable to hold boolean value for checkbutton
+            bLockParams = self.dictFilesSegment[self.currentFile][CONFIGURED_INDX]
+            self.varLockedParams = BooleanVar(value=bLockParams)
+            
             # Define variablies to hold data in silders and spinboxes
             varThreshold = DoubleVar(value = 0.)
             varMinSize = IntVar(value = 0)
             varMaxSize = DoubleVar(value = 0)
             varAreaThreshold = IntVar(value = 0)
+            
+            # Add checkbutton to set image as configured or able to reset
+            self.cbLockParams = Checkbutton(self.frameImage, text = 'Lock params', variable=self.varLockedParams, command=self.lockParams)
+            self.cbLockParams.grid(row = 0, column = 5, sticky = 'WE')
+            
+            # Check if need to select because image locked
+            if (bLockParams):
+                self.cbLockParams.select()
+            # Need deselect because the image is not locked
+            else:
+                self.cbLockParams.deselect()
             
             # Add sliders for segmentation options:
             self.thresholdLbl = Label(self.frameImage, text="Threshold:").grid(row=1,padx=20, sticky=W)
@@ -462,8 +492,8 @@ class Root(Tk):
             self.imgCanvas.bind("<B1-Motion>", self.move_move)
             
             # Open edit menu buttons if successfully opend image
-            self.editMenu.entryconfig("Set Default Thresholds", state="normal")
-            self.editMenu.entryconfig("Reset Default Thresholds", state="normal")
+            self.editMenu.entryconfig("Set Default Thresholds", state=NORMAL)
+            self.editMenu.entryconfig("Reset Default Thresholds", state=NORMAL)
             
             # Set image open flag as true
             self.imgAlreadyOpen = IMG_ALREADY_OPEN_FLAG
@@ -577,6 +607,9 @@ class Root(Tk):
             # put image on canvas pic's upper left corner (NW) on the canvas
             self.imgCanvas.create_image((0,0), image=self.photo, anchor=NW)
             
+            # Set image as locked parameters change
+            self.cbLockParams.select()
+            
         except ValueError:
             messagebox.showerror(title="Error", message="Wrong threshold values selected!")
 
@@ -623,13 +656,13 @@ class Root(Tk):
             cd.convertDCM(self.path)
         
         # Load all files in directory to array - without directories
-        onlyfiles = [f for f in listdir(self.path) if isfile(join(self.path, f)) and f.lower().endswith(ACCEPTED_EXTENSIONS)]
+        self.lstOnlyFilesInDir = [f for f in listdir(self.path) if isfile(join(self.path, f)) and f.lower().endswith(ACCEPTED_EXTENSIONS)]
         
         # Define image index
         nImgIndex = 0
         
         # Open all the images in the directory
-        for image in onlyfiles:    
+        for image in self.lstOnlyFilesInDir:    
             self.lbFiles.insert(nImgIndex,image)
             
             # Save images into dictionary in order to perform segmentation
@@ -637,6 +670,15 @@ class Root(Tk):
             
             # Increment the index
             nImgIndex = nImgIndex + 1
+            
+        # Check if files exists in directory open sorting buttons otherwise close them
+        if (nImgIndex != 0):
+            self.editMenu.entryconfig("Sort Ascending", state=NORMAL)
+            self.editMenu.entryconfig("Sort Descending", state=NORMAL)
+            
+        else:
+            self.editMenu.entryconfig("Sort Ascending", state=DISABLED)
+            self.editMenu.entryconfig("Sort Descending", state=DISABLED)
     
     def editImage(self):
         """
@@ -746,11 +788,14 @@ class Root(Tk):
                 self.frameImage.destroy()
                 
                 # As image not selected disable all the buttons that use open image panel
-                self.editMenu.entryconfig("Set Default Thresholds", state="disabled")
-                self.editMenu.entryconfig("Reset Default Thresholds", state="disabled")
+                self.editMenu.entryconfig("Set Default Thresholds", state=DISABLED)
+                self.editMenu.entryconfig("Reset Default Thresholds", state=DISABLED)
                 
             # Change image already opend to not opend image
             self.imgAlreadyOpen = IMG_NOT_OPEN_FLAG
+            
+            # Clear the list of files that already tested
+            self.lstTestedFiles = []
             
     def performSegmentation(self):
         """
@@ -950,6 +995,76 @@ class Root(Tk):
             
             # Set the new default value for all images that not configured by the user
             self.setNewValuesForImages()
+    
+    def sortAsc(self):
+        """
+        The function sorts the listbox of files in ascending order.
+        
+        Parameters:
+            self - the object
+        
+        Return:
+            None
+        """
+        self.sortFiles()
+        
+    def sortDesc(self):
+        """
+        The function sorts the listbox of files in descending order.
+        
+        Parameters:
+            self - the object
+        
+        Return:
+            None
+        """
+        self.sortFiles(True)
+    
+    def sortFiles(self, bReverse=False):
+        """
+        The function sorts the listbox of files in selected order and saves the color of tested files.
+        
+        Parameters:
+            self - the object
+        
+        Return:
+            None
+        """
+        
+        # sort the file list
+        self.lstOnlyFilesInDir.sort(reverse=bReverse)
+        
+        # Clean current listbox
+        self.lbFiles.delete(0,END)
+        
+        # Define image index
+        nImgIndex = 0
+        
+        # Open all the images in the directory
+        for image in self.lstOnlyFilesInDir:    
+            self.lbFiles.insert(nImgIndex,image)
+            
+            # Check if image already tested to mark it green
+            if (image in self.lstTestedFiles):
+                # Mark the image as already selected
+                self.lbFiles.itemconfig(nImgIndex, bg=TESTED_IMGS_COLOR)
+            
+            # Increment the index
+            nImgIndex = nImgIndex + 1
+    
+    def lockParams(self):
+        """
+        The function changes the lock argument of the file according to the checkbox.
+        
+        Parameters:
+            self - the object
+        
+        Return:
+            None
+        """
+        
+        # Change the lock argument for the current file
+        self.dictFilesSegment[self.currentFile][CONFIGURED_INDX] = self.varLockedParams.get()
         
 # Check if we are running the module from the main scope
 if __name__ == "__main__":

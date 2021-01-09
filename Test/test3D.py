@@ -12,7 +12,7 @@ z = []
 hu =[]
 
 # Write contour points to file
-with open("aviel2_grayscale.txt", "r") as inLines:
+with open("t1_grayscale.txt", "r") as inLines:
    for line in inLines.read().splitlines():
        curLine = line.split(',')
        x.append(float(curLine[0]))
@@ -27,4 +27,4 @@ zdata = tuple(z)
 color = tuple(hu)
 
 ax = plt.axes(projection='3d')
-ax.scatter3D(xdata, ydata, zdata, c=color, cmap='Greens');
+ax.scatter3D(xdata, ydata, zdata, c=color, cmap='bone_r');
