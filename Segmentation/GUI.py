@@ -15,6 +15,7 @@ try:
     import Notebook as no
     import AboutWindow as ab
     import ConvertDicom as cd
+    import ImageChoose as ic
     import webbrowser
     import gc
     import time
@@ -162,6 +163,15 @@ class Root(Tk):
         
         # Add button for reset the default thresholds to program default
         self.editMenu.add_command(label='Reset Default Thresholds', state = DISABLED, command = self.resetDefaultValues)
+        
+        # Add separator for the Documentation button
+        self.editMenu.add_separator()
+        
+        # Add button for save current values to default thresholds
+        self.editMenu.add_command(label='Remove Image', state = DISABLED, command = "")
+        
+        # Add button for reset the default thresholds to program default
+        self.editMenu.add_command(label='Reopen Image', state = NORMAL, command = self.reopenImage)
         
         # ==================  Help Menu
         
@@ -1065,6 +1075,44 @@ class Root(Tk):
         
         # Change the lock argument for the current file
         self.dictFilesSegment[self.currentFile][CONFIGURED_INDX] = self.varLockedParams.get()
+        
+    def reopenImage(self):
+        """
+        The function opens new screen that allows to user to add or remove images from segmentation.
+        
+        Parameters:
+            self - the object
+        
+        Return:
+            None
+        """
+        
+        # Make the main screen invisible
+        self.withdraw()
+        
+        # Open the image selection screen
+        ImgChoose = ic.ImageSelect(self.path, list(self.lbFiles.get(0,END)))
+        
+        # Wait till the image selection screen being destroyed
+        self.wait_window(ImgChoose)
+        
+        # Return the main screen be visible
+        self.deiconify()
+        
+        # Update list of images
+        self.updateImageList()
+    
+    def updateImageList(self):
+
+        # Filter images to reload
+        lstReloadImages = list(filter(lambda img: img not in self.lstOnlyFilesInDir and img in ic.results, ic.results))
+        
+        # Filter images to remove
+        lstRemoveImages = list(filter(lambda img: img in self.lstOnlyFilesInDir and img not in ic.results, self.lstOnlyFilesInDir))
+        
+        # Remove images from the list
+        # TO DO
+        
         
 # Check if we are running the module from the main scope
 if __name__ == "__main__":
