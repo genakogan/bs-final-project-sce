@@ -168,7 +168,7 @@ class Root(Tk):
         self.editMenu.add_separator()
         
         # Add button for save current values to default thresholds
-        self.editMenu.add_command(label='Remove Image', state = DISABLED, command = "")
+        self.editMenu.add_command(label='Remove Image', state = NORMAL, command = self.delSingleFile)
         
         # Add button for reset the default thresholds to program default
         self.editMenu.add_command(label='Reopen Image', state = NORMAL, command = self.reopenImage)
@@ -666,13 +666,13 @@ class Root(Tk):
             cd.convertDCM(self.path)
         
         # Load all files in directory to array - without directories
-        self.lstOnlyFilesInDir = [f for f in listdir(self.path) if isfile(join(self.path, f)) and f.lower().endswith(ACCEPTED_EXTENSIONS)]
+        self.lstOnlyWantedFilesInDir = [f for f in listdir(self.path) if isfile(join(self.path, f)) and f.lower().endswith(ACCEPTED_EXTENSIONS)]
         
         # Define image index
         nImgIndex = 0
         
         # Open all the images in the directory
-        for image in self.lstOnlyFilesInDir:    
+        for image in self.lstOnlyWantedFilesInDir:    
             self.lbFiles.insert(nImgIndex,image)
             
             # Save images into dictionary in order to perform segmentation
@@ -792,21 +792,35 @@ class Root(Tk):
             # Load all the images in the current selected path into the listbox
             self.loadImagesInPath()
             
-            # Check if already image opend then 
-            if(self.imgAlreadyOpen == IMG_ALREADY_OPEN_FLAG):
-                # Image already exists then destroy the frame to create new one for new image
-                self.frameImage.destroy()
-                
-                # As image not selected disable all the buttons that use open image panel
-                self.editMenu.entryconfig("Set Default Thresholds", state=DISABLED)
-                self.editMenu.entryconfig("Reset Default Thresholds", state=DISABLED)
-                
-            # Change image already opend to not opend image
-            self.imgAlreadyOpen = IMG_NOT_OPEN_FLAG
+            # Check if already image opend then clean the image frame
+            self.cleanImageFrame()
             
             # Clear the list of files that already tested
             self.lstTestedFiles = []
+    
+    def cleanImageFrame(self):
+        """
+        The function cleans the image frame with buttons and closes the buttons that depends on image.
+        
+        Parameters:
+            self - the object
+        
+        Return:
+            None
+        """
+        
+        # Check if already image opend then 
+        if(self.imgAlreadyOpen == IMG_ALREADY_OPEN_FLAG):
+            # Image already exists then destroy the frame to create new one for new image
+            self.frameImage.destroy()
             
+            # As image not selected disable all the buttons that use open image panel
+            self.editMenu.entryconfig("Set Default Thresholds", state=DISABLED)
+            self.editMenu.entryconfig("Reset Default Thresholds", state=DISABLED)
+            
+        # Change image already opend to not opend image
+        self.imgAlreadyOpen = IMG_NOT_OPEN_FLAG
+    
     def performSegmentation(self):
         """
         The function performs the segmentation on all the images in the listbox according to the chosen parameters.
@@ -1042,7 +1056,7 @@ class Root(Tk):
         """
         
         # sort the file list
-        self.lstOnlyFilesInDir.sort(reverse=bReverse)
+        self.lstOnlyWantedFilesInDir.sort(reverse=bReverse)
         
         # Clean current listbox
         self.lbFiles.delete(0,END)
@@ -1051,7 +1065,7 @@ class Root(Tk):
         nImgIndex = 0
         
         # Open all the images in the directory
-        for image in self.lstOnlyFilesInDir:    
+        for image in self.lstOnlyWantedFilesInDir:    
             self.lbFiles.insert(nImgIndex,image)
             
             # Check if image already tested to mark it green
@@ -1105,13 +1119,54 @@ class Root(Tk):
     def updateImageList(self):
 
         # Filter images to reload
-        lstReloadImages = list(filter(lambda img: img not in self.lstOnlyFilesInDir and img in ic.results, ic.results))
+        lstReloadImages = list(filter(lambda img: img not in self.lstOnlyWantedFilesInDir and img in ic.results, ic.results))
         
         # Filter images to remove
-        lstRemoveImages = list(filter(lambda img: img in self.lstOnlyFilesInDir and img not in ic.results, self.lstOnlyFilesInDir))
+        lstRemoveImages = list(filter(lambda img: img in self.lstOnlyWantedFilesInDir and img not in ic.results, self.lstOnlyWantedFilesInDir))
         
         # Remove images from the list
-        # TO DO
+        for image in lstRemoveImages:
+            # Remove the selected files
+            self.removeSingleFile(image)
+        
+        # Add images into the list
+        for image in lstReloadImages:
+            # Add the file to the list of files
+            self.lbFiles.insert(END, image)
+            
+            # Add the current image into dictionary of configurations
+            self.dictFilesSegment[image] = [seg.imageConfigSegment(self.path + '/' + image, self.default_threshold, self.default_min_size, self.default_area_size, self.default_max_size), self.default_threshold, self.default_min_size, self.default_area_size, self.default_max_size, False]
+            
+            # Add the file to wanted files list
+            self.lstOnlyWantedFilesInDir.append(image)
+        
+        # Sort the images list in ascending order
+        self.sortAsc()
+        
+    def removeSingleFile(self, fileName):
+        # Remove the file from dictionary
+        del self.dictFilesSegment[fileName]
+        
+        # Check if file already tested
+        if (fileName in self.lstTestedFiles):
+            
+            # Remove the file from tested files
+            self.lstTestedFiles.remove(fileName)
+        
+        # Remove the file from wanted files list
+        self.lstOnlyWantedFilesInDir.remove(fileName)
+        
+        # Remove the file from listbox
+        nIndxFile = self.lbFiles.get(0, END).index(fileName)
+        self.lbFiles.delete(nIndxFile)
+        
+    def delSingleFile(self):
+        
+        # Remove the single selected file
+        self.removeSingleFile(self.currentFile)
+        
+        # Check if already image opend then clean the frame
+        self.cleanImageFrame()
         
         
 # Check if we are running the module from the main scope

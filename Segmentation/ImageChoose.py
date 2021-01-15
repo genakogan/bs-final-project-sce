@@ -4,10 +4,13 @@ from tkinter import *
 from tkinter import ttk
 from os import listdir, getcwd
 from os.path import isfile, join, basename, dirname
+from PIL import Image, ImageTk
 
 # Constant variable definition
 WINDOW_HEIGHT           = 800           # The height of the main window
 WINDOW_WIDTH            = 600           # The width of the main window
+RESIZED_IMG_SIZE_WIDTH  = 500           # Resized image width
+RESIZED_IMG_SIZE_HEIGHT = 500           # Resized image height
 ACCEPTED_EXTENSIONS     = ('jpg', 'jpeg', 'tif', 'tiff', 'png')     # Accepted file extensions
 
 # Global
@@ -31,6 +34,12 @@ class ImageSelect(Toplevel):
         
         super(ImageSelect, self).__init__()
         
+        # Global results list
+        global results
+        
+        # Set results files defaultly to recived list
+        results = currWantedFiles
+        
         # list of wanted files and unwanted files
         self.lstWantedFiles = currWantedFiles
         self.lstUnwantedFiles = []
@@ -42,29 +51,27 @@ class ImageSelect(Toplevel):
         self.filesFrame = Frame(self)
         self.filesFrame.grid(row = 0, column = 0)
         
-        # List of files
+        # List of wanted files
         # Creating Listbox of files
-        self.lbFiles1 = Listbox(self.filesFrame, height=int(WINDOW_HEIGHT / 20))
+        self.lbWantedFiles = Listbox(self.filesFrame, height=int(WINDOW_HEIGHT / 20))
         
         # Creating the scroll side bar in order to accept 
         # scrolling if lot files exists
-        self.lbFilesSbar1 = Scrollbar(self.filesFrame)
+        self.lbWantedFilesSbar = Scrollbar(self.filesFrame)
         
         # Attaching Listbox to Scrollbar Since we need to have
         # a vertical scroll we use yscrollcommand
-        self.lbFiles1.config(yscrollcommand=self.lbFilesSbar1.set)
+        self.lbWantedFiles.config(yscrollcommand=self.lbWantedFilesSbar.set)
         
         # setting scrollbar command parameter  
         # to listbox.yview method its yview because 
         # we need to have a vertical view 
-        self.lbFilesSbar1.config(command=self.lbFiles1.yview)
+        self.lbWantedFilesSbar.config(command=self.lbWantedFiles.yview)
         
         # Place the listbox at the left most side of the window and then
         # Place the sidebar
-        self.lbFiles1.grid(column = 0, row = 0, sticky='nsew')
-        self.lbFilesSbar1.grid(column = 1, row = 0, sticky='nsew')
-        
-        self.lbFiles2 = Listbox(self.filesFrame, height=int(WINDOW_HEIGHT / 20))
+        self.lbWantedFiles.grid(column = 0, row = 0, sticky='nsew')
+        self.lbWantedFilesSbar.grid(column = 1, row = 0, sticky='nsew')
         
         #-------------------
         
@@ -90,29 +97,36 @@ class ImageSelect(Toplevel):
         
         #-------------------
         
+        # List of files unwanted files
+        # Creating Listbox of files
+        self.lbUnwantedFiles = Listbox(self.filesFrame, height=int(WINDOW_HEIGHT / 20))
+        
         # Creating the scroll side bar in order to accept 
         # scrolling if lot files exists
-        self.lbFilesSbar2 = Scrollbar(self.filesFrame)
+        self.lbUnwantedFilesSbar = Scrollbar(self.filesFrame)
         
         # Attaching Listbox to Scrollbar Since we need to have
         # a vertical scroll we use yscrollcommand
-        self.lbFiles2.config(yscrollcommand=self.lbFilesSbar2.set)
+        self.lbUnwantedFiles.config(yscrollcommand=self.lbUnwantedFilesSbar.set)
         
         # setting scrollbar command parameter  
         # to listbox.yview method its yview because 
         # we need to have a vertical view 
-        self.lbFilesSbar2.config(command=self.lbFiles2.yview)
+        self.lbUnwantedFilesSbar.config(command=self.lbUnwantedFiles.yview)
         
         # Place the listbox at the left most side of the window and then
         # Place the sidebar
-        self.lbFiles2.grid(column = 3, row = 0, sticky='nsew')
-        self.lbFilesSbar2.grid(column = 4, row = 0, sticky='nsew')
+        self.lbUnwantedFiles.grid(column = 3, row = 0, sticky='nsew')
+        self.lbUnwantedFilesSbar.grid(column = 4, row = 0, sticky='nsew')
         
         # Load images in path
         self.loadImagesInPath(path)
         
         # -------------
-
+        
+        # Bind double click on image to show preview
+        self.lbWantedFiles.bind('<Double-1>', lambda event: self.imagePreview(event, self.lbWantedFiles, path))
+        self.lbUnwantedFiles.bind('<Double-1>', lambda event: self.imagePreview(event, self.lbUnwantedFiles, path))
         
     def loadImagesInPath(self, path):
         """
@@ -135,36 +149,36 @@ class ImageSelect(Toplevel):
         for image in lstOnlyFilesInDir:    
             # Check to which list import the file
             if (image in self.lstWantedFiles):
-                self.lbFiles1.insert(END, image)
+                self.lbWantedFiles.insert(END, image)
                 self.lstWantedFiles.append(image)
             else:
-                self.lbFiles2.insert(END, image)
+                self.lbUnwantedFiles.insert(END, image)
                 self.lstUnwantedFiles.append(image)
                 
     
     def removeFiles(self):
         try:
             # Get the name of the current selected file
-            currFile = self.lbFiles1.get(self.lbFiles1.curselection())
+            currFile = self.lbWantedFiles.get(self.lbWantedFiles.curselection())
             
             # Delete the file from the left list - wanted files
-            self.lbFiles1.delete(self.lbFiles1.curselection())
+            self.lbWantedFiles.delete(self.lbWantedFiles.curselection())
             
             # Add the file to the right list - deleted files
-            self.lbFiles2.insert(END,currFile)
+            self.lbUnwantedFiles.insert(END,currFile)
         except TclError as te:
             messagebox.showerror(title="Error", message="File was not selected!")
         
     def addFiles(self):
         try:
             # Get the name of the current selected file
-            currFile = self.lbFiles2.get(self.lbFiles2.curselection())
+            currFile = self.lbUnwantedFiles.get(self.lbUnwantedFiles.curselection())
             
             # Delete the file from the right list - deleted files
-            self.lbFiles2.delete(self.lbFiles2.curselection())
+            self.lbUnwantedFiles.delete(self.lbUnwantedFiles.curselection())
             
             # Add the file to the left list - wanted files
-            self.lbFiles1.insert(END,currFile)
+            self.lbWantedFiles.insert(END,currFile)
         except TclError as te:
             messagebox.showerror(title="Error", message="File was not selected!")
             
@@ -173,10 +187,42 @@ class ImageSelect(Toplevel):
         global results
         
         # Save the wanted items into results list
-        results = list(self.lbFiles1.get(0, END))
+        results = list(self.lbWantedFiles.get(0, END))
         
         # Close the menu
         self.destroy()
+        
+    def imagePreview(self, event, currListBox, path):
+        # Get index of current slection in the lisbox
+        cs = currListBox.curselection() 
+        
+        # Get the list of all items in the lisbox
+        all_items = currListBox.get(0, 'end')
+        
+        # Check if files exists in the listbox of files
+        if (len(all_items) == 0):
+            # Prints error message - no file selected
+            messagebox.showerror(title="Error", message="No file was selected!")
+        else:
+            # Save the current selected line in attribute
+            currSelectedFile = currListBox.get(cs[0])
+            
+            # Create canvas for image
+            self.imgCanvas = Canvas(self, width = RESIZED_IMG_SIZE_WIDTH, height = RESIZED_IMG_SIZE_HEIGHT)
+            
+            # Place the image canvas in the correct location in the window
+            self.imgCanvas.grid(column = 5, row = 0, padx=120, sticky='n', columnspan=100, pady = 50)
+            
+            self.img = Image.open(path + "/" + currSelectedFile)
+            resized = self.img.resize((RESIZED_IMG_SIZE_WIDTH, RESIZED_IMG_SIZE_HEIGHT), Image.ANTIALIAS)
+            
+            # Prepare the image for preview
+            self.imgOnCanvas = ImageTk.PhotoImage(resized)
+            
+            # put image on canvas pic's upper left corner (NW) on the canvas
+            self.imgCanvas.create_image((0,0), image=self.imgOnCanvas, anchor=NW)
+        
+        
             
 # Run the main GUI
 #root = ImageSelect("C:\\Users\\Aviel-PC\\לימודים\\Project\\CT images\\spineimage\\SpineCTAnonExample\\SpineCTAnonExample\\test5")
