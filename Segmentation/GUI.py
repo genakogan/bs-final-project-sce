@@ -7,9 +7,10 @@ try:
     from tkinter import filedialog
     from tkinter import messagebox
     from PIL import Image, ImageTk
-    from os import listdir, getcwd
+    from os import listdir, getcwd, mkdir
     from os.path import isfile, join, basename, dirname
     from tkinter import Menu
+    from pathlib import Path
     import Segmentation as seg
     import Paint as pnt 
     import Notebook as no
@@ -50,6 +51,9 @@ IMG_NOT_OPEN_FLAG       = 0             # Flag if user didn't open image yet
 IMG_ALREADY_OPEN_FLAG   = 1             # Flag if user already opend image
 PROGRAM_PATH            = getcwd()      # Get path of the py files
 DOCUMENTATION_FILE      = PROGRAM_PATH + '/Documentation/GKAR.pdf'  # Get documentation file path
+STATE_DIRECTORY_NAME    = '/Saved_state'                            # Path to state files
+DICT_STATE_FNAME        = "dict_state.txt"                          # Name of dictionary file
+TESTED_STATE_FNAME      = "tested_files_state.txt"                  # Name of tested files file
 ACCEPTED_EXTENSIONS     = ('jpg', 'jpeg', 'tif', 'tiff', 'png')     # Accepted file extensions
 TESTED_IMGS_COLOR       = "SpringGreen3" # The color for images that segmentation already tested by user
 
@@ -136,6 +140,15 @@ class Root(Tk):
         # Add separator for the exit button
         fileMenu.add_separator()
         
+        # Add button for save the state of configurations
+        fileMenu.add_command(label='Save state', state = DISABLED, command = self.saveConfigState)
+        
+        # Add button for load the state of configurations
+        fileMenu.add_command(label='Load state', state = DISABLED, command = self.loadConfigState)
+        
+        # Add separator for the exit button
+        fileMenu.add_separator()
+        
         # Add exit button to File menu
         fileMenu.add_command(label='Exit', command = self.programExit, accelerator="Ctrl+Q")
         self.bind_all("<Control-q>", self.programExit)
@@ -168,10 +181,10 @@ class Root(Tk):
         self.editMenu.add_separator()
         
         # Add button for save current values to default thresholds
-        self.editMenu.add_command(label='Remove Image', state = NORMAL, command = self.delSingleFile)
+        self.editMenu.add_command(label='Remove Image', state = DISABLED, command = self.delSingleFile)
         
         # Add button for reset the default thresholds to program default
-        self.editMenu.add_command(label='Reopen Image', state = NORMAL, command = self.reopenImage)
+        self.editMenu.add_command(label='Reopen Image', state = DISABLED, command = self.reopenImage)
         
         # ==================  Help Menu
         
@@ -504,6 +517,7 @@ class Root(Tk):
             # Open edit menu buttons if successfully opend image
             self.editMenu.entryconfig("Set Default Thresholds", state=NORMAL)
             self.editMenu.entryconfig("Reset Default Thresholds", state=NORMAL)
+            self.editMenu.entryconfig("Remove Image", state=NORMAL)
             
             # Set image open flag as true
             self.imgAlreadyOpen = IMG_ALREADY_OPEN_FLAG
@@ -685,10 +699,13 @@ class Root(Tk):
         if (nImgIndex != 0):
             self.editMenu.entryconfig("Sort Ascending", state=NORMAL)
             self.editMenu.entryconfig("Sort Descending", state=NORMAL)
+            self.editMenu.entryconfig("Reopen Image", state=NORMAL)
             
         else:
+            # Disable the buttons if no images in directory
             self.editMenu.entryconfig("Sort Ascending", state=DISABLED)
             self.editMenu.entryconfig("Sort Descending", state=DISABLED)
+            self.editMenu.entryconfig("Reopen Image", state=DISABLED)
     
     def editImage(self):
         """
@@ -817,6 +834,7 @@ class Root(Tk):
             # As image not selected disable all the buttons that use open image panel
             self.editMenu.entryconfig("Set Default Thresholds", state=DISABLED)
             self.editMenu.entryconfig("Reset Default Thresholds", state=DISABLED)
+            self.editMenu.entryconfig("Remove Image", state=DISABLED)
             
         # Change image already opend to not opend image
         self.imgAlreadyOpen = IMG_NOT_OPEN_FLAG
@@ -1117,6 +1135,18 @@ class Root(Tk):
         self.updateImageList()
     
     def updateImageList(self):
+        """
+        The function updates the listbox of files according to the selection to add or remove files from the list.
+        If the file exists in wanted but not in results then remove it from list (selected to remove).
+        If the file does not exist in wanted but in reslts then add it to list (selected to import).
+        The function sorts the list in ascending order.
+        
+        Parameters:
+            self - the object
+        
+        Return:
+            None
+        """
 
         # Filter images to reload
         lstReloadImages = list(filter(lambda img: img not in self.lstOnlyWantedFilesInDir and img in ic.results, ic.results))
@@ -1144,6 +1174,17 @@ class Root(Tk):
         self.sortAsc()
         
     def removeSingleFile(self, fileName):
+        """
+        The function removes the selected file from the files list
+        
+        Parameters:
+            self     - the object
+            filename - (str) the name of the file to remove
+        
+        Return:
+            None
+        """
+        
         # Remove the file from dictionary
         del self.dictFilesSegment[fileName]
         
@@ -1161,12 +1202,161 @@ class Root(Tk):
         self.lbFiles.delete(nIndxFile)
         
     def delSingleFile(self):
+        """
+        The function performs remove of single file from list using removeSingleFile function.
+        The function cleans the image frame.
+        
+        Parameters:
+            self - the object
+        
+        Return:
+            None
+        """
         
         # Remove the single selected file
         self.removeSingleFile(self.currentFile)
         
         # Check if already image opend then clean the frame
         self.cleanImageFrame()
+        
+    def saveConfigState(self):
+        """
+        The function saves the configuration of images into results files in Save_state directory.
+        The function saves both the dictionary of configurations and list of already tested files.
+        
+        Parameters:
+            self - the object
+        
+        Return:
+            None
+        """
+        
+        # Create new directory for state files
+        strStatePath = self.path + STATE_DIRECTORY_NAME
+        
+        # Check if directory already exists and save the state into boolean variable
+        boolDirExists = Path(strStatePath).exists()
+        
+        # Check if state directory already exists if not create
+        if (not boolDirExists):
+            mkdir(strStatePath)
+            
+        # Write the dictionary of file configurations into file
+        with open(strStatePath + "/" + DICT_STATE_FNAME, "w") as outDictState:
+           outDictState.write(self.buildDictString())
+           
+        # Write the names of tested files into file
+        with open(strStatePath + "/" + TESTED_STATE_FNAME, "w") as outTestedState:
+           outTestedState.write(self.buildTestedFilesString())
+           
+    def buildDictString(self):
+        """
+        The function builds string with the configuration dictionary.
+        
+        Parameters:
+            self - the object
+        
+        Return:
+            None
+        """
+        
+        # Result string
+        strRes = ""
+        
+        # Run over the files in the dictionary
+        for file in self.dictFilesSegment:
+            strRes = strRes + file + "," \
+                    + str(self.dictFilesSegment[file][THRESHOLD_INDX]) + "," \
+                    + str(self.dictFilesSegment[file][MIN_SIZE_INDX]) + "," \
+                    + str(self.dictFilesSegment[file][AREA_SIZE_INDX]) + "," \
+                    + str(self.dictFilesSegment[file][MAX_SIZE_INDX]) + "," \
+                    + str(self.dictFilesSegment[file][CONFIGURED_INDX]) + "\n"
+            
+        return (strRes)
+    
+    def buildTestedFilesString(self):
+        """
+        The function builds string with the filenames of tested files.
+        
+        Parameters:
+            self - the object
+        
+        Return:
+            None
+        """
+        
+        # Result string
+        strRes = ""
+        
+        # Run over the tested list
+        for file in self.lstTestedFiles:
+            strRes = strRes + file + "\n"
+            
+        return (strRes)
+    
+    def loadConfigState(self):
+        """
+        The function loads the saved state from files back into the system.
+        If the file exists then the function loads configurations, otherwise,
+        the current configurations remain.
+        
+        Parameters:
+            self - the object
+        
+        Return:
+            None
+        """
+        
+        # Create new directory for state files
+        strStatePath = self.path + STATE_DIRECTORY_NAME
+        
+        # Load the dictionary state into temporary dictionary for test
+        with open(strStatePath + "/" + DICT_STATE_FNAME) as inDictState:
+            # Run over the lines in file
+            for line in inDictState:
+                
+                # Read the line and split it to list
+                lstLine = line.split(",")
+               
+                # Define the path to the current file
+                strFilePath = self.path + '/' + lstLine[0]
+               
+                # Check if the image exists in the path
+                if ((Path(strFilePath).exists())):
+                    
+                    # Save the configurations for file into variables
+                    fName = lstLine[0]
+                    fThreshold = float(lstLine[1])
+                    fMinSize = int(lstLine[2])
+                    fAreaThreshold = int(lstLine[3])
+                    fMaxSize = int(lstLine[4])
+                    fConfigFlag = bool(lstLine[5])
+                                               
+                    # The file exists then recover the configuration
+                    self.dictFilesSegment[fName] = [seg.imageConfigSegment(self.path + '/' + fName, fThreshold, fMinSize, fAreaThreshold, fMaxSize), fThreshold, fMinSize, fAreaThreshold, fMaxSize, fConfigFlag]
+        
+        # Load the already tested files from file
+        with open(strStatePath + "/" + TESTED_STATE_FNAME) as inTestedState:
+            # Run over the lines in file
+            for line in inTestedState:
+                
+                # Get the file name
+                filename = line.rstrip("\n")
+                
+                # Define the path to the current file
+                strFilePath = self.path + '/' + filename
+                
+                # Check if the image exists in the path
+                if ((Path(strFilePath).exists())):
+                
+                    # Add the file to tested list
+                    self.lstTestedFiles.append(filename)
+                    
+                    # Find the index of current file
+                    nImgIndex = self.lbFiles.get(0, END).index(filename)
+                    
+                    # Mark the image as already selected
+                    self.lbFiles.itemconfig(nImgIndex, bg=TESTED_IMGS_COLOR)
         
         
 # Check if we are running the module from the main scope

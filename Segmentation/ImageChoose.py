@@ -142,9 +142,6 @@ class ImageSelect(Toplevel):
         # Load all files in directory to array - without directories
         lstOnlyFilesInDir = [f for f in listdir(path) if isfile(join(path, f)) and f.lower().endswith(ACCEPTED_EXTENSIONS)]
         
-        # Define image index
-        #nImgIndex = 0
-        
         # Open all the images in the directory
         for image in lstOnlyFilesInDir:    
             # Check to which list import the file
