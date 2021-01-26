@@ -122,35 +122,35 @@ class Root(Tk):
         # ==================  File Menu
         
         # Create file button for the upper menu
-        fileMenu = Menu(self.menu, tearoff=False)
+        self.fileMenu = Menu(self.menu, tearoff=False)
         
         # Add the file menu to the upper menu
-        self.menu.add_cascade(label='File', menu=fileMenu)
+        self.menu.add_cascade(label='File', menu=self.fileMenu)
         self.config(menu=self.menu)
         
         # Add button for choosing directory of files
-        fileMenu.add_command(label='Open Directory', command = self.fileDialog)
+        self.fileMenu.add_command(label='Open Directory', command = self.fileDialog)
         
         # Add separator for the exit button
-        fileMenu.add_separator()
+        self.fileMenu.add_separator()
         
         # Add button for perform segmentation on all images in list
-        fileMenu.add_command(label='Perform segmentation', command = self.performSegmentation)
+        self.fileMenu.add_command(label='Perform segmentation', command = self.performSegmentation)
         
         # Add separator for the exit button
-        fileMenu.add_separator()
+        self.fileMenu.add_separator()
         
         # Add button for save the state of configurations
-        fileMenu.add_command(label='Save state', state = DISABLED, command = self.saveConfigState)
+        self.fileMenu.add_command(label='Save state', state = DISABLED, command = self.saveConfigState)
         
         # Add button for load the state of configurations
-        fileMenu.add_command(label='Load state', state = DISABLED, command = self.loadConfigState)
+        self.fileMenu.add_command(label='Load state', state = DISABLED, command = self.loadConfigState)
         
         # Add separator for the exit button
-        fileMenu.add_separator()
+        self.fileMenu.add_separator()
         
         # Add exit button to File menu
-        fileMenu.add_command(label='Exit', command = self.programExit, accelerator="Ctrl+Q")
+        self.fileMenu.add_command(label='Exit', command = self.programExit, accelerator="Ctrl+Q")
         self.bind_all("<Control-q>", self.programExit)
         
          # ==================  Edit Menu
@@ -655,6 +655,24 @@ class Root(Tk):
         self.areaVal.set(self.default_area_size)
         self.maxSizeVal.set(self.default_max_size)
         
+    def lockImageDependentButtons(self, stateButtons):
+        """
+        The function change the state of image dependent buttons according to the state in stateButtons parameter
+        
+        Parameters:
+            self         - the object
+            stateButtons - the new state of buttons
+        
+        Return:
+            None
+        """
+        # Set the state according to images in directory to all buttons that depend on images
+        self.editMenu.entryconfig("Sort Ascending", state = stateButtons)
+        self.editMenu.entryconfig("Sort Descending", state = stateButtons)
+        self.editMenu.entryconfig("Reopen Image", state = stateButtons)
+        self.fileMenu.entryconfig("Save state", state = stateButtons)
+        self.fileMenu.entryconfig("Load state", state = stateButtons)
+        
     def loadImagesInPath(self):
         """
         The function loads all the images in the selected path.
@@ -667,6 +685,9 @@ class Root(Tk):
         Return:
             None
         """
+        
+        # State of buttons that depends on images in folder
+        stateButtons = DISABLED
         
         # Create empty dictionary for files
         self.dictFilesSegment = {}
@@ -695,17 +716,30 @@ class Root(Tk):
             # Increment the index
             nImgIndex = nImgIndex + 1
             
-        # Check if files exists in directory open sorting buttons otherwise close them
-        if (nImgIndex != 0):
+        # Check if files exists in directory open buttons otherwise close them
+        """if (nImgIndex != 0):
+            stateButtons = NORMAL
             self.editMenu.entryconfig("Sort Ascending", state=NORMAL)
             self.editMenu.entryconfig("Sort Descending", state=NORMAL)
             self.editMenu.entryconfig("Reopen Image", state=NORMAL)
-            
+            self.fileMenu.entryconfig("Save state", state=NORMAL)
+            self.fileMenu.entryconfig("Load state", state=NORMAL)
         else:
             # Disable the buttons if no images in directory
             self.editMenu.entryconfig("Sort Ascending", state=DISABLED)
             self.editMenu.entryconfig("Sort Descending", state=DISABLED)
             self.editMenu.entryconfig("Reopen Image", state=DISABLED)
+            self.fileMenu.entryconfig("Save state", state=DISABLED)
+            self.fileMenu.entryconfig("Load state", state=DISABLED)
+        print(stateButtons)
+        """
+        
+        # Check if images exists in the directory then change state of buttons
+        if (nImgIndex != 0):
+            stateButtons = NORMAL
+            
+        # Set the state of buttons if images exists in directory or not
+        self.lockImageDependentButtons(stateButtons)
     
     def editImage(self):
         """
@@ -1147,6 +1181,9 @@ class Root(Tk):
         Return:
             None
         """
+        
+        # State of buttons that depends on images in folder
+        stateButtons = DISABLED
 
         # Filter images to reload
         lstReloadImages = list(filter(lambda img: img not in self.lstOnlyWantedFilesInDir and img in ic.results, ic.results))
@@ -1170,8 +1207,15 @@ class Root(Tk):
             # Add the file to wanted files list
             self.lstOnlyWantedFilesInDir.append(image)
         
-        # Sort the images list in ascending order
-        self.sortAsc()
+        # Check if images exists
+        if (self.lbFiles.size() != 0):
+            stateButtons = NORMAL
+            
+            # Sort the images list in ascending order
+            self.sortAsc()
+        
+        # Set the state of buttons if images exists in directory or not
+        self.lockImageDependentButtons(stateButtons)
         
     def removeSingleFile(self, fileName):
         """
@@ -1310,6 +1354,9 @@ class Root(Tk):
         # Create new directory for state files
         strStatePath = self.path + STATE_DIRECTORY_NAME
         
+        # List of images that saved
+        lstSavedImages = []
+        
         # Load the dictionary state into temporary dictionary for test
         with open(strStatePath + "/" + DICT_STATE_FNAME) as inDictState:
             # Run over the lines in file
@@ -1334,6 +1381,9 @@ class Root(Tk):
                                                
                     # The file exists then recover the configuration
                     self.dictFilesSegment[fName] = [seg.imageConfigSegment(self.path + '/' + fName, fThreshold, fMinSize, fAreaThreshold, fMaxSize), fThreshold, fMinSize, fAreaThreshold, fMaxSize, fConfigFlag]
+                    
+                    # Add the image to saved images list 
+                    lstSavedImages.append(lstLine[0])
         
         # Load the already tested files from file
         with open(strStatePath + "/" + TESTED_STATE_FNAME) as inTestedState:
@@ -1357,7 +1407,13 @@ class Root(Tk):
                     
                     # Mark the image as already selected
                     self.lbFiles.itemconfig(nImgIndex, bg=TESTED_IMGS_COLOR)
-        
+                    
+        # Check all items in list that was not saved in save state option and remove them
+        for image in list(self.dictFilesSegment.keys()):
+            # Check if image was not saved as part of save state
+            if image not in lstSavedImages:
+                # Remove the image from the list
+                self.removeSingleFile(image)
         
 # Check if we are running the module from the main scope
 if __name__ == "__main__":
