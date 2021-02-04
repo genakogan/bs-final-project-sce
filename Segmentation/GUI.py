@@ -17,6 +17,7 @@ try:
     import AboutWindow as ab
     import ConvertDicom as cd
     import ImageChoose as ic
+    import AboutWindow as aw
     import webbrowser
     import gc
     import time
@@ -800,12 +801,18 @@ class Root(Tk):
         Return:
             None
         """
-        
+        """
         aboutW = ab.AboutW()
         aboutW.show()
         
         # Prevent garbage collector cleaning the memory and closing the window
         mainloop()
+        """
+        # Open the image selection screen
+        AboutWin = aw.AboutW()
+        
+        # Wait till the image selection screen being destroyed
+        self.wait_window(AboutWin)
     
     # Open Documentaion file
     def documentation(self):
