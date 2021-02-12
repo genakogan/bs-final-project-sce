@@ -45,20 +45,3 @@ Run:
 ```!git config --global user.name "Your Name"```
 
 ```!git commit -m first```
-
-## Required libraries
-
-Install required libraries - tk, pillow, scikit-image, matplotlib. Type bellow command
-
-```pip install tk```
-
-```pip install pillow```
-
-```pip install scikit-image```
-
-```pip install matplotlib```
-
-
-
-
-
