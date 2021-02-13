@@ -50,6 +50,8 @@ PROGRESS_BAR_PERCENTAGE = 100.0         # Percent of progress bar set to 100
 PROGRESS_BAR_INIT       = 0             # value for reseting progress bar to progress Zero
 IMG_NOT_OPEN_FLAG       = 0             # Flag if user didn't open image yet
 IMG_ALREADY_OPEN_FLAG   = 1             # Flag if user already opend image
+SEGMENTATION_SUCCESS    = 0             # Flag indicates segmentation successfully done
+SEGMENTATION_ERROR      = 1             # Flag indicates failed to perofrm segmentation
 PROGRAM_PATH            = getcwd()      # Get path of the py files
 DOCUMENTATION_FILE      = PROGRAM_PATH + '/Documentation/GKAR.pdf'  # Get documentation file path
 STATE_DIRECTORY_NAME    = '/Saved_state'                            # Path to state files
@@ -177,6 +179,12 @@ class Root(Tk):
         
         # Add button for reset the default thresholds to program default
         self.editMenu.add_command(label='Reset Default Thresholds', state = DISABLED, command = self.resetDefaultValues)
+        
+        # Add separator for the Documentation button
+        self.editMenu.add_separator()
+        
+        # Add button for set thresholds on images below
+        self.editMenu.add_command(label='Set Thresholds Below', state = DISABLED, command = self.setBelowThresholds)
         
         # Add separator for the Documentation button
         self.editMenu.add_separator()
@@ -519,6 +527,7 @@ class Root(Tk):
             self.editMenu.entryconfig("Set Default Thresholds", state=NORMAL)
             self.editMenu.entryconfig("Reset Default Thresholds", state=NORMAL)
             self.editMenu.entryconfig("Remove Image", state=NORMAL)
+            self.editMenu.entryconfig("Set Thresholds Below", state=NORMAL)
             
             # Set image open flag as true
             self.imgAlreadyOpen = IMG_ALREADY_OPEN_FLAG
@@ -716,24 +725,6 @@ class Root(Tk):
             
             # Increment the index
             nImgIndex = nImgIndex + 1
-            
-        # Check if files exists in directory open buttons otherwise close them
-        """if (nImgIndex != 0):
-            stateButtons = NORMAL
-            self.editMenu.entryconfig("Sort Ascending", state=NORMAL)
-            self.editMenu.entryconfig("Sort Descending", state=NORMAL)
-            self.editMenu.entryconfig("Reopen Image", state=NORMAL)
-            self.fileMenu.entryconfig("Save state", state=NORMAL)
-            self.fileMenu.entryconfig("Load state", state=NORMAL)
-        else:
-            # Disable the buttons if no images in directory
-            self.editMenu.entryconfig("Sort Ascending", state=DISABLED)
-            self.editMenu.entryconfig("Sort Descending", state=DISABLED)
-            self.editMenu.entryconfig("Reopen Image", state=DISABLED)
-            self.fileMenu.entryconfig("Save state", state=DISABLED)
-            self.fileMenu.entryconfig("Load state", state=DISABLED)
-        print(stateButtons)
-        """
         
         # Check if images exists in the directory then change state of buttons
         if (nImgIndex != 0):
@@ -876,6 +867,7 @@ class Root(Tk):
             self.editMenu.entryconfig("Set Default Thresholds", state=DISABLED)
             self.editMenu.entryconfig("Reset Default Thresholds", state=DISABLED)
             self.editMenu.entryconfig("Remove Image", state=DISABLED)
+            self.editMenu.entryconfig("Set Thresholds Below", state=DISABLED)
             
         # Change image already opend to not opend image
         self.imgAlreadyOpen = IMG_NOT_OPEN_FLAG
@@ -912,7 +904,7 @@ class Root(Tk):
                 # Wrong path selected
                 messagebox.showerror(title="Error", message="Wrong path selected!")
                 
-                return 0
+                return (SEGMENTATION_ERROR)
             # Correct path selected
             else:
                 # Get filename and path from fullpath
@@ -955,9 +947,19 @@ class Root(Tk):
                     # Update progress bar popup window
                     popup.update()
                     
-                    # Wait for the result of segmentation
-                    #time.sleep(1)
-                    self.dictFilesSegment[curFile][SEGMENT_FUNC_INDX](1,filepath,filename, picCounter)
+                    # Perform segmentatuion
+                    nSegStat = self.dictFilesSegment[curFile][SEGMENT_FUNC_INDX](1,filepath,filename, picCounter)
+                    
+                    # Check if segmentation failed on current image
+                    if nSegStat == seg.SAVE_FAILED:
+                        # Raise error message
+                        messagebox.showerror(title="Error", message="Segmentation error due to incorrect parameters on image " + str(curFile) + "!")
+                        
+                        # Destroy the popup windows as the segmentation ended
+                        popup.destroy()
+                        
+                        return (SEGMENTATION_ERROR)
+                    
                     
                     # Increment the progress
                     progress += progress_step
@@ -971,7 +973,7 @@ class Root(Tk):
                 # Destroy the popup windows as the segmentation ended
                 popup.destroy()
                 
-        return 0
+        return (SEGMENTATION_SUCCESS)
                 
     def singleImageSegmentation(self):
         """
@@ -997,7 +999,8 @@ class Root(Tk):
             # Wrong path selected
             messagebox.showerror(title="Error", message="Wrong path selected!")
             
-            return 0
+            return (SEGMENTATION_ERROR)
+        
         # Correct path selected
         else:
             # Get filename and path from fullpath
@@ -1005,10 +1008,19 @@ class Root(Tk):
             filepath = dirname(fullpath)
             
             # Perform segmentation and save to file
-            self.dictFilesSegment[self.currentFile][SEGMENT_FUNC_INDX](1,filepath,filename, 0)
+            nSegStat = self.dictFilesSegment[self.currentFile][SEGMENT_FUNC_INDX](1,filepath,filename, 0)
+            
+            # Check if segmentation failed on current image
+            if nSegStat == seg.SAVE_FAILED:
+                # Raise error message
+                messagebox.showerror(title="Error", message="Segmentation error due to incorrect parameters on image " + str(self.currentFile) + "!")
+                
+                return (SEGMENTATION_ERROR)
             
             # Show message about successful segmentation
             messagebox.showinfo(title="Segmentation completed!", message="Segmentation of " + self.currentFile + " completed!")
+            
+            return (SEGMENTATION_SUCCESS)
     
     def setNewValuesForImages(self):
         """
@@ -1041,7 +1053,7 @@ class Root(Tk):
         """
         
         # Check if user really want to set new default
-        MsgBox = messagebox.askquestion ('Change Default Values','Are you sure you want to change the default thresholds?',icon = 'question')
+        MsgBox = messagebox.askquestion('Change Default Values','Are you sure you want to change the default thresholds?',icon = 'question')
         
         # Check if yes selected by the user
         if MsgBox == 'yes':
@@ -1066,7 +1078,7 @@ class Root(Tk):
         """
         
         # Check if user really want to reset default values
-        MsgBox = messagebox.askquestion ('Change Default Values','Are you sure you want to reset back to the default thresholds?',icon = 'question')
+        MsgBox = messagebox.askquestion('Change Default Values','Are you sure you want to reset back to the default thresholds?',icon = 'question')
         
         # Check if yes selected by the user
         if MsgBox == 'yes':
@@ -1078,6 +1090,45 @@ class Root(Tk):
             
             # Set the new default value for all images that not configured by the user
             self.setNewValuesForImages()
+            
+    def setBelowThresholds(self):
+        """
+        The function sets the current selected thresholds on all images 
+        below the current image and only if the image is not locked.
+        If the image already locked then bypass the current image and move to next one.
+        
+        Parameters:
+            self - the object
+        
+        Return:
+            None
+        """
+        
+        # Get values of parameters sliders
+        threshold = self.threshold.get()
+        minSizeVal = self.minSizeVal.get()
+        areaVal = self.areaVal.get()
+        maxSizeVal = self.maxSizeVal.get()
+        
+        # Find the index of current file
+        nImgIndex = self.lbFiles.get(0, END).index(self.currentFile)
+        
+        # Check if the current image is the last image
+        if (len(self.lbFiles.get(nImgIndex + 1, END)) == 0):
+            messagebox.showwarning('Warning','You are on last image therefore there are no more images below!', icon = 'warning')
+        # Current image is not last image
+        else:
+            # Check if user really want to set new default
+            MsgBox = messagebox.askquestion('Change thresholds of images below','Are you sure you want to change the thresholds of images below the current image?',icon = 'question')
+            
+            # Check if yes selected by the user
+            if (MsgBox == 'yes'):
+                # Move on all images below the current image
+                for image in self.lbFiles.get(nImgIndex + 1, END):
+                    # Check if image already locked
+                    if (self.dictFilesSegment[image][CONFIGURED_INDX] == False):
+                        # Change images into values in order to perform segmentation
+                        self.dictFilesSegment[image] = [seg.imageConfigSegment(self.path + '/' + image, threshold, minSizeVal, areaVal, maxSizeVal), threshold, minSizeVal, areaVal, maxSizeVal, False]
     
     def sortAsc(self):
         """

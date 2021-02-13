@@ -5,6 +5,7 @@ import numpy as np
 import io
 import cv2
 import imutils
+import warnings
 from PIL import Image
 from skimage import data
 from skimage import color
@@ -25,6 +26,9 @@ X_INDEX_IN_LINE                 = 0             # The index of the x coordinate 
 Y_INDEX_IN_LINE                 = 1             # The index of the y coordinate in a line
 CONTOUR_FILENAME_ADDITION       = "_contour"    # Save contour file additional word
 GRAYSCALE_FILENAME_ADDITION     = "_grayscale"  # Save grayscale file additional word
+
+# Suppress matplotlib warnings
+warnings.filterwarnings("ignore")
 
 # The function configures an image before segmentation
 def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 5000, max_size = 50000):
@@ -418,11 +422,9 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
             try:
                 # Write contour points to file
                 with open(strContourFile, "a") as outContour:
-                   #outContour.write(str(lstContourPoints) + '\n\n')
                    outContour.write(buildResultString(lstContourPoints))
             except:
-                print("Error in save contour")
-                
+                #print("Error in save contour")
                 return (SAVE_FAILED)
             
             # Calculate the grayscale points list
@@ -432,11 +434,9 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
             try:
                 # Write grayscale points to file
                 with open(strGrayscaleFile, "a") as outGrayscale:
-                   #outGrayscale.write(str(lstGrayscalePoints) + '\n\n')
                    outGrayscale.write(buildResultString(lstGrayscalePoints))
             except:
-                print("Error in save grayscale")
-                
+                #print("Error in save grayscale")
                 return (SAVE_FAILED)
                 
             return (SAVED_SUCCESSFULLY)

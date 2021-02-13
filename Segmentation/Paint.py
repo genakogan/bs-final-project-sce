@@ -474,19 +474,21 @@ class PaintApp(QMainWindow):
         # Change the icon for unsaved image
         self.setWindowIcon(QtGui.QIcon(UNSAVED_ICON))
         
-        # clear all changes on the image
-        self.imageDraw = QtGui.QImage(self.undoDraw[0])
+        # Check if already drawed on image
+        if len(self.undoDraw) != 0:
+            # clear all changes on the image
+            self.imageDraw = QtGui.QImage(self.undoDraw[0])
         
-        # Clear undo and redo arrays
-        self.undoDraw.clear()
-        self.redoDraw.clear()
+            # Clear undo and redo arrays
+            self.undoDraw.clear()
+            self.redoDraw.clear()
         
-        # Diable undo and redo menu
-        self.undoAction.setDisabled(True)
-        self.redoAction.setDisabled(True)
+            # Diable undo and redo menu
+            self.undoAction.setDisabled(True)
+            self.redoAction.setDisabled(True)
         
-        # update 
-        self.update()
+            # update 
+            self.update()
         
     # Undo method
     def undo(self):
