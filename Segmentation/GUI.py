@@ -61,7 +61,7 @@ ACCEPTED_EXTENSIONS     = ('jpg', 'jpeg', 'tif', 'tiff', 'png')     # Accepted f
 TESTED_IMGS_COLOR       = "SpringGreen3" # The color for images that segmentation already tested by user
 
 # Code segment
-
+#Test
 class Root(Tk):
     
     """
