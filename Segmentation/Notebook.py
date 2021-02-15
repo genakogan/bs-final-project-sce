@@ -130,6 +130,7 @@ class Note(QMainWindow):
         undoAction = QAction(QIcon(os.path.join('images', 'arrow-curve-180-left.png')), "Undo", self)
         undoAction.setStatusTip("Undo last change")
         undoAction.triggered.connect(self.editor.undo)
+        editToolbar.addAction(undoAction)
         editMenu.addAction(undoAction)
         
         # Add "Redo" to the "Edit" menu
@@ -218,12 +219,7 @@ class Note(QMainWindow):
         self.italicAction.toggled.connect(self.editor.setFontItalic)
         formatToolbar.addAction(self.italicAction)
         
-        # Setting "Align left" button
-        self.alignlAction = QAction(QIcon(os.path.join('images', 'edit-alignment.png')), "Align left", self)
-        self.alignlAction.setStatusTip("Align text left")
-        self.alignlAction.setCheckable(True)
-        self.alignlAction.triggered.connect(lambda: self.editor.setAlignment(Qt.AlignLeft))
-        formatToolbar.addAction(self.alignlAction)
+        
         
         # Setting "Underline" button
         self.underlineAction = QAction(QIcon(os.path.join('images', 'edit-underline.png')), "Underline", self)
@@ -232,6 +228,14 @@ class Note(QMainWindow):
         self.underlineAction.setCheckable(True)
         self.underlineAction.toggled.connect(self.editor.setFontUnderline)
         formatToolbar.addAction(self.underlineAction)
+        
+        
+        # Setting "Align left" button
+        self.alignlAction = QAction(QIcon(os.path.join('images', 'edit-alignment.png')), "Align left", self)
+        self.alignlAction.setStatusTip("Align text left")
+        self.alignlAction.setCheckable(True)
+        self.alignlAction.triggered.connect(lambda: self.editor.setAlignment(Qt.AlignLeft))
+        formatToolbar.addAction(self.alignlAction)
         
         # Setting "Align left" button
         self.aligncAction = QAction(QIcon(os.path.join('images', 'edit-alignment-center.png')), "Align center", self)
