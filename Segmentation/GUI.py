@@ -766,6 +766,13 @@ class Root(Tk):
             if (pnt.savedAsPath == pnt.SAVED_SAME_PATH_DIFF_NAME):
                 # Add the new file to the file list
                 self.lbFiles.insert(self.lbFiles.size(), pnt.savedAsFileName)
+                
+                # Add the image into dictionary in order to perform segmentation
+                self.dictFilesSegment[pnt.savedAsFileName] = [seg.imageConfigSegment(self.path + '/' + pnt.savedAsFileName), self.default_threshold, self.default_min_size, self.default_area_size, self.default_max_size, False]
+                
+                # Add the file to wanted files list
+                self.lstOnlyWantedFilesInDir.append(pnt.savedAsFileName)
+                
             # Same path and same name
             elif (pnt.savedAsPath == pnt.SAVED_SAME_PATH_AND_NAME):
                 # Reload the image
