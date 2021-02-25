@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import * 
 from PyQt5.QtCore import * 
 from pathlib import Path
+from tkinter import messagebox
 import sys 
 import PIL
 import os
@@ -17,6 +18,7 @@ BACKUP_DIRECTORY_PATH       = '/Backup'
 SAVED_DIFF_PATH             = 0
 SAVED_SAME_PATH_DIFF_NAME   = 1
 SAVED_SAME_PATH_AND_NAME    = 2
+SEGMENTATION_ERROR          = 1 
 
 # Global Variables
 savedImageFlag      = False
@@ -137,17 +139,20 @@ class PaintApp(QMainWindow):
         saveAsAction.triggered.connect(self.saveAs) 
   
         # creating clear action 
-        clearAction = QAction("Clear", self) 
+        self.clearAction = QAction("Clear", self) 
         
         # adding short cut to the clear action 
-        clearAction.setShortcut("Ctrl+c") 
+        self.clearAction.setShortcut("Ctrl+c") 
         
         # adding clear to the file menu 
-        fileMenu.addAction(clearAction) 
+        fileMenu.addAction(self.clearAction) 
         
         # adding action to the clear 
-        clearAction.triggered.connect(self.clear) 
-
+        self.clearAction.triggered.connect(self.clear) 
+        
+        # disable clear action
+        self.clearAction.setDisabled(True)
+        
         # creating exit action     
         exitAct = QAction('Exit', self)
         
@@ -316,8 +321,9 @@ class PaintApp(QMainWindow):
             # make drawing flag false 
             self.drawing = False
             
-            # Enable the undo menu
+            # Enable the undo and clear menu
             self.undoAction.setDisabled(False)
+            self.clearAction.setDisabled(False)
             
             # Clear the redo list because new drawing created
             self.redoDraw.clear()
@@ -431,9 +437,18 @@ class PaintApp(QMainWindow):
         global savedAsPath
         global savedAsFileName
         
+        
         # Set file path
         filePath, _ = QFileDialog.getSaveFileName(self, "Save Image", self.filePath + '/' + self.name, 
                           "JPEG(*.jpg *.jpeg);;PNG(*.png);;TIF(*.tif *.tiff);;All Files(*.*) ") 
+        
+        
+        if (not filePath):
+            # Wrong path selected
+            messagebox.showerror(title="Error", message="Image not saved!")
+            
+            return (SEGMENTATION_ERROR)
+        
         
         # Save the image
         self.saveFileOperation(filePath)
@@ -474,6 +489,10 @@ class PaintApp(QMainWindow):
         # Change the icon for unsaved image
         self.setWindowIcon(QtGui.QIcon(UNSAVED_ICON))
         
+        
+                
+            
+            
         # Check if already drawed on image
         if len(self.undoDraw) != 0:
             # clear all changes on the image
@@ -483,10 +502,11 @@ class PaintApp(QMainWindow):
             self.undoDraw.clear()
             self.redoDraw.clear()
         
-            # Diable undo and redo menu
+            # Diable undo, redo and clear menu
             self.undoAction.setDisabled(True)
             self.redoAction.setDisabled(True)
-        
+            self.clearAction.setDisabled(True)
+            
             # update 
             self.update()
         
@@ -514,6 +534,7 @@ class PaintApp(QMainWindow):
         if(len(self.undoDraw) == 0):
             # Disable undo menu
             self.undoAction.setDisabled(True)
+            self.clearAction.setDisabled(True)
             
         # Enable redo menu
         self.redoAction.setDisabled(False)
