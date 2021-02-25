@@ -5,7 +5,6 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import * 
 from PyQt5.QtCore import * 
 from pathlib import Path
-from tkinter import messagebox
 import sys 
 import PIL
 import os
@@ -444,9 +443,11 @@ class PaintApp(QMainWindow):
         
         
         if (not filePath):
-            # Wrong path selected
-            messagebox.showerror(title="Error", message="Image not saved!")
-            
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("Image not saved!")
+            msg.setWindowTitle("Error!")
+            msg.exec_()
             return (SEGMENTATION_ERROR)
         
         
