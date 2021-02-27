@@ -51,6 +51,9 @@ class PaintApp(QMainWindow):
         global savedAsImageFlag
         global savedAsFileName
         
+        # Set the screen alway stay on top
+        self.setWindowFlags(Qt.WindowStaysOnTopHint)
+        
         # Set window icon as saved image
         self.setWindowIcon(QtGui.QIcon(SAVED_ICON)) 
         

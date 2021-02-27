@@ -7,13 +7,13 @@ import sys
 import uuid
 import base64
 import TextEditNote as te
+
 # Global Variables
 IMAGE_EXTENSIONS = ['.jpg','.png','.bmp'] # Accepted image extensions
 HTML_EXTENSIONS = ['.htm', '.html']  # Accepted file extensions
+
 # Possible font sizes
 FONT_SIZES = [7, 8, 9, 10, 11, 12, 13, 14, 18, 24, 36, 48, 64, 72, 96, 144, 288]
-
-
 
 class Note(QMainWindow):
     """
@@ -31,6 +31,9 @@ class Note(QMainWindow):
             None
         """
         super(Note, self).__init__()
+        
+        # Set the screen alway stay on top
+        self.setWindowFlags(Qt.WindowStaysOnTopHint)
         
         # QVBoxLayout Organizes your widgets vertically in a window
         layout = QVBoxLayout()

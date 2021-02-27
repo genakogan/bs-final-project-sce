@@ -793,7 +793,10 @@ class Root(Tk):
             None
         """
         
+        # Create notebook instance
         noteP = no.Note()
+        
+        # Show the notebook
         noteP.show()
         
     def about(self):
@@ -813,11 +816,11 @@ class Root(Tk):
         # Prevent garbage collector cleaning the memory and closing the window
         mainloop()
         """
-        # Open the image selection screen
+        # Open the about screen
         AboutWin = aw.AboutW()
         
-        # Wait till the image selection screen being destroyed
-        self.wait_window(AboutWin)
+        # Set the about window on always top
+        AboutWin.grab_set_global()
     
     # Open Documentaion file
     def documentation(self):
