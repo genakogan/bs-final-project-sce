@@ -753,6 +753,9 @@ class Root(Tk):
             None
         """
         
+        # Make the main screen invisible
+        self.withdraw()
+        
         # Start the paint application on the selected image
         paintWindow = pnt.PaintApp(self.currentFile, self.path)
         paintWindow.show()
@@ -782,6 +785,9 @@ class Root(Tk):
             # Reload the image
             self.previewSegmentation()
         
+        # Return the main screen be visible
+        self.deiconify()
+        
     def notebook(self):
         """
         The function runs the notebook application in order to write memo pages.
@@ -793,11 +799,20 @@ class Root(Tk):
             None
         """
         
+        # Make the main screen invisible
+        self.withdraw()
+        
         # Create notebook instance
         noteP = no.Note()
         
         # Show the notebook
         noteP.show()
+        
+        # Prevent garbage collector cleaning the memory and closing the window
+        no.noteApp.exec_()
+        
+        # Return the main screen be visible
+        self.deiconify()
         
     def about(self):
         """

@@ -519,7 +519,7 @@ def splitext(p):
     """
     return os.path.splitext(p)[1].lower()
 
-
+noteApp = QApplication(sys.argv)
 #if __name__ == '__main__':
 
     #app = QApplication(sys.argv)
