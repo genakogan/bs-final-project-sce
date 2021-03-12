@@ -154,6 +154,16 @@ class ImageSelect(Toplevel):
                 
     
     def removeFiles(self):
+        """
+        The function removes selected files from list
+        
+        Parameters:
+            self - the object
+        
+        Return:
+            None
+        """
+        
         try:
             # Get the name of the current selected file
             currFile = self.lbWantedFiles.get(self.lbWantedFiles.curselection())
@@ -167,6 +177,16 @@ class ImageSelect(Toplevel):
             messagebox.showerror(title="Error", message="File was not selected!")
         
     def addFiles(self):
+        """
+        The function reopen images that was removed into the list.
+        
+        Parameters:
+            self - the object
+        
+        Return:
+            None
+        """
+        
         try:
             # Get the name of the current selected file
             currFile = self.lbUnwantedFiles.get(self.lbUnwantedFiles.curselection())
@@ -180,6 +200,16 @@ class ImageSelect(Toplevel):
             messagebox.showerror(title="Error", message="File was not selected!")
             
     def saveOptions(self):
+        """
+        The function saves the selected files and returns to main screen
+        
+        Parameters:
+            self - the object
+        
+        Return:
+            None
+        """
+        
         # Global results list
         global results
         
@@ -190,6 +220,19 @@ class ImageSelect(Toplevel):
         self.destroy()
         
     def imagePreview(self, event, currListBox, path):
+        """
+        The function shows image preview for the selected image
+        
+        Parameters:
+            self        - the object
+            event       - event of mouse clicked
+            currListBox - current list of files
+            path        - path of the folder of files
+        
+        Return:
+            None
+        """
+        
         # Get index of current slection in the lisbox
         cs = currListBox.curselection() 
         

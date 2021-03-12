@@ -12,7 +12,7 @@ z = []
 hu =[]
 
 # Write contour points to file
-with open("t1_grayscale.txt", "r") as inLines:
+with open("t2_grayscale.txt", "r") as inLines:
    for line in inLines.read().splitlines():
        curLine = line.split(',')
        x.append(float(curLine[0]))

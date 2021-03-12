@@ -419,6 +419,13 @@ class PaintApp(QMainWindow):
         # Save the file
         self.saveFileOperation(strPath)
         
+        # Raise an message to close the window or continue edit
+        bCloseFlag = QMessageBox.question(self, 'Editor', "Do you want to close the editor?", QMessageBox.Yes, QMessageBox.No)
+    
+        # Check if close window option was selected
+        if (bCloseFlag == QMessageBox.Yes):
+            # Close the window
+            self.close()
       
     # method for saving canvas "save as"
     def saveAs(self):

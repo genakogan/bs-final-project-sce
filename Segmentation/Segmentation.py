@@ -20,12 +20,15 @@ SAVE_FILENAME_INDEX             = 0             # Save filename index in splited
 SAVE_FILE_EXTENSION_INDEX       = 1             # Save file extension index in splited list of filename and extension
 SAVE_FAILED                     = 0             # Status for image that failed in save
 SAVED_SUCCESSFULLY              = 1             # Status for image saved successfully
-PIXEL_TO_MM_VAL                 = 0.352777778   # The value of One pixel converted to milimeters
 XYZ_LAST_INDEX                  = 2             # The index of Z in the result list to check convert to milimeters
 X_INDEX_IN_LINE                 = 0             # The index of the x coordinate in a line
 Y_INDEX_IN_LINE                 = 1             # The index of the y coordinate in a line
+PIXEL_TO_MM_VAL_DEFAULT         = [0.352777778, 0.352777778, 0.352777778]   # The value of One pixel converted to milimeters X, Y, Z
 CONTOUR_FILENAME_ADDITION       = "_contour"    # Save contour file additional word
 GRAYSCALE_FILENAME_ADDITION     = "_grayscale"  # Save grayscale file additional word
+
+# Global variables
+pixel_to_mm_val_configured      = PIXEL_TO_MM_VAL_DEFAULT  # The value of One pixel converted to milimeters X, Y, Z as configured
 
 # Suppress matplotlib warnings
 warnings.filterwarnings("ignore")
@@ -81,7 +84,7 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
                 # Check if the current cell is part of X,Y,Z to convert to milimeters
                 if (nIndx <= XYZ_LAST_INDEX):
                     # Convert the value of coordinate to milimeters
-                    curLine += '{0:.3f}'.format(int(line[nIndx]) * PIXEL_TO_MM_VAL)
+                    curLine += '{0:.3f}'.format(int(line[nIndx]) * pixel_to_mm_val_configured[nIndx])
                 # The current cell is not x,y or z therefore save it as is
                 else:
                     curLine += str(line[nIndx])     

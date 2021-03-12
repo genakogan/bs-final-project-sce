@@ -18,6 +18,7 @@ try:
     import ConvertDicom as cd
     import ImageChoose as ic
     import AboutWindow as aw
+    import PixelSpacingChoose as psc
     import webbrowser
     import gc
     import time
@@ -36,8 +37,8 @@ DEFAULT_MAX_SIZE        = 50000         # Default max size of object for segment
 THRESHOLD_RESOLUTION    = 0.0005        # Increment resolution for threshold
 ZOOM_IN_SCALE           = 1.1           # Zoom in scale size
 ZOOM_OUT_SCALE          = 0.9           # Zoom out scale size
-MIN_DISPLAY_SIZE_WIDTH  = 400           # Minimum size in pixel of displayed image of width
-MIN_DISPLAY_SIZE_HEIGHT = 400           # Minimum size in pixel of displayed image of height
+MIN_DISPLAY_SIZE_WIDTH  = 500           # Minimum size in pixel of displayed image of width
+MIN_DISPLAY_SIZE_HEIGHT = 500           # Minimum size in pixel of displayed image of height
 SEGMENT_FUNC_INDX       = 0             # Index for segmentation function in the list inside dictionary of files
 THRESHOLD_INDX          = 1             # Index for threshold in the list inside dictionary of files
 MIN_SIZE_INDX           = 2             # Index for min size in the list inside dictionary of files
@@ -186,6 +187,12 @@ class Root(Tk):
         
         # Add button for set thresholds on images below
         self.editMenu.add_command(label='Set Thresholds Below', state = DISABLED, command = self.setBelowThresholds)
+        
+        # Add separator for the Documentation button
+        self.editMenu.add_separator()
+        
+        # Add button for set spacing for current segmentation
+        self.editMenu.add_command(label='Set Spacing Values', state = DISABLED, command = self.setSpacingValues)
         
         # Add separator for the Documentation button
         self.editMenu.add_separator()
@@ -394,7 +401,7 @@ class Root(Tk):
             self.frameImage.grid(column = 2, row = 0, sticky='nsew')
             
             # Create canvas for image
-            self.imgCanvas = Canvas(self.frameImage, width = 500, height = 500)
+            self.imgCanvas = Canvas(self.frameImage, width = MIN_DISPLAY_SIZE_WIDTH, height = MIN_DISPLAY_SIZE_HEIGHT)
             
             # Place the image canvas in the correct location in the window
             self.imgCanvas.grid(column = 0, row = 0, padx=120, sticky='n', columnspan=100)
@@ -689,6 +696,7 @@ class Root(Tk):
         self.editMenu.entryconfig("Reopen Image", state = stateButtons)
         self.fileMenu.entryconfig("Save state", state = stateButtons)
         self.fileMenu.entryconfig("Load state", state = stateButtons)
+        self.editMenu.entryconfig("Set Spacing Values", state = stateButtons)
         
     def loadImagesInPath(self):
         """
@@ -758,7 +766,7 @@ class Root(Tk):
         
         # Start the paint application on the selected image
         paintWindow = pnt.PaintApp(self.currentFile, self.path)
-        paintWindow.show()
+        paintWindow.showMaximized()
         
         # Prevent garbage collector cleaning the memory and closing the window
         pnt.paintApp.exec_()
@@ -875,6 +883,9 @@ class Root(Tk):
             
             # Check if already image opend then clean the image frame
             self.cleanImageFrame()
+            
+            # Reset the spacing values per directory
+            seg.pixel_to_mm_val_configured = seg.PIXEL_TO_MM_VAL_DEFAULT
             
             # Clear the list of files that already tested
             self.lstTestedFiles = []
@@ -1504,6 +1515,32 @@ class Root(Tk):
             if image not in lstSavedImages:
                 # Remove the image from the list
                 self.removeSingleFile(image)
+                
+    def setSpacingValues(self):
+        """
+        The function opens new screen that allows user to change spacing parameters.
+        
+        Parameters:
+            self - the object
+        
+        Return:
+            None
+        """
+        
+        # Make the main screen invisible
+        self.withdraw()
+        
+        # Open the image selection screen
+        SpacingChoose = psc.PixelSpaceChoose(seg.pixel_to_mm_val_configured)
+        
+        # Wait till the image selection screen being destroyed
+        self.wait_window(SpacingChoose)
+        
+        # Return the main screen be visible
+        self.deiconify()
+        
+        # Set the result list to segmentation algorithm
+        seg.pixel_to_mm_val_configured = psc.results
         
 # Check if we are running the module from the main scope
 if __name__ == "__main__":
