@@ -6,6 +6,9 @@ import io
 import cv2
 import imutils
 import warnings
+import ntpath
+import os
+import pickle
 from PIL import Image
 from skimage import data
 from skimage import color
@@ -274,6 +277,16 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
         # Initialize the indexes for loop
         nIndxRow = 0
         nIndxCol = 0
+        
+        # Get HU file path
+        hu_file = ntpath.basename(path)
+        path_to_hu = ntpath.dirname(path) + "/HU/" + hu_file.replace(".png", ".HU")
+        
+        # Check if it is a dicom file - dicom if HU file exists
+        if os.path.exists(path_to_hu):
+            # Load HU values from the HU file
+            with open (path_to_hu, 'rb') as inHU:
+                npGrayImage = pickle.load(inHU)
 
         # Run over the rows of the image
         for nIndxRow in range(0, npImg.shape[0]):
@@ -314,19 +327,6 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
                 lstContourPoints.append((int(cord[1]), int(cord[0]), nZValue))
         
         return (lstContourPoints)
-    
-    # Test function to write the sizes matrix to file
-    # Delete when end testing
-    def testSizesMat():
-        nonlocal sizesMat
-        strT = ""
-        for x in range(512):
-            for y in range(512):
-                strT += str(int(sizesMat[x][y][0])) + " "
-            strT += "\n"
-        with open("test.txt", "w") as t:
-            t.write(strT)
-        
     
     # The function Performs the segmentation
     def perform_segmentation(saveOption = SAVE_OPTION_FALSE, saveFilepath = "", saveFilename = "", nZValue = 0):

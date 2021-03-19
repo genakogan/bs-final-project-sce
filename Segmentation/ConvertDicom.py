@@ -6,12 +6,15 @@ import cv2
 import pandas as pd
 import csv
 import numpy as np
+import pickle
 from PIL import Image
 
 # Constant definition
 DICOM_DESCRIPTION_FILE_PATH = "./DicomDescription/dicom_image_description.csv"  # The path to dicom attributes file
 DICOM_FILENAME_EXTENSION    = '.dcm'                                            # The extension of dicom file
 RESULT_FILE_EXTENSION       = '.png'                                            # The extension of the result file
+HU_FILE_EXTENSION           = '.HU'                                             # The extension of the HU result file
+HU_FILE_PATH                = '/HU/'
 PATIENT_DETAILS_FILENAME    = 'Patient_Detail.csv'                              # The name of the result file with patient data
 
 # The function gets folder path with dicom files and converts them to PNG
@@ -36,6 +39,13 @@ def convertDCM(folder_path):
     # Read all dicom data disription
     dicom_image_description = pd.read_csv(DICOM_DESCRIPTION_FILE_PATH)
     
+    # Create path for HU files
+    hu_files_path = folder_path + HU_FILE_PATH
+    
+    # Check if path does not exists
+    if not os.path.exists(hu_files_path):
+        os.makedirs(hu_files_path)
+    
     # Open the result csv file to write
     with open(os.path.join(folder_path, PATIENT_DETAILS_FILENAME), 'w', newline ='') as csvPatient:
         
@@ -56,21 +66,34 @@ def convertDCM(folder_path):
             rows = []
             
             # Get the slope and interept from the dicom image
-            slope = float(dicomImg.RescaleSlope)
-            intercept = float(dicomImg.RescaleIntercept)
+            slope = int(dicomImg.RescaleSlope)
+            intercept = int(dicomImg.RescaleIntercept)
             
             # Rescale the pixels according to slope and intercept
-            df_data = intercept + dicomImg.pixel_array.astype(float) * slope
+            df_data = intercept + dicomImg.pixel_array.astype(int) * slope
             
-            # Convert the image to tiff
+            # Convert the image to png
             curImage = curImage.replace(DICOM_FILENAME_EXTENSION, RESULT_FILE_EXTENSION)
+            
+            # Create file name for HU files
+            curImageHU = curImage.replace(RESULT_FILE_EXTENSION, HU_FILE_EXTENSION)
             
             # Convert the image from grayscale back to RGB
             stacked_img = np.stack((df_data,) * 3, axis=-1)
             
             # Wrtite the result image to file
             cv2.imwrite(os.path.join(folder_path, curImage), stacked_img)
+            
+            # Try save HU to file
+            try:
                 
+                # Write contour points to file
+                with open(os.path.join(folder_path + HU_FILE_PATH, curImageHU), "wb") as outHU:
+                    # Write HU values into the binary file
+                    pickle.dump(df_data, outHU)
+            except:
+                return (0)
+              
             # Run over the fields
             for field in fieldnames:
                 try:
