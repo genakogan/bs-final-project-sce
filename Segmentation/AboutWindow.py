@@ -12,6 +12,7 @@ class AboutW(Toplevel):
     def __init__(self):
         super(AboutW, self).__init__()
         self.geometry(WINDOWGEOMETRY)
+        
         # creating main tkinter window/toplevel    
         # first level
         self.leftFirstLevel = LabelFrame(self, relief='raised')
@@ -20,7 +21,7 @@ class AboutW(Toplevel):
         self.rightFirstLevel.grid(row = 0, column = 1,rowspan = 3, sticky = W, padx = 10)
         img = PhotoImage(file = IMAGE_PATH) 
         img1 = img.subsample(1, 1)
-        self.title=Label(self.leftFirstLevel, text = "Segmentation of computer tomography \n(CT) image sequence for lower back vertebrae.",font=("Aharoni", 25)).grid(row = 0, column = 0)
+        self.title=Label(self.leftFirstLevel, text = "Segmentation of computer tomography \n(CT) image sequence for lower back vertebrae.\n © 2020 - 2021",font=("Aharoni", 25)).grid(row = 0, column = 0)
         self.sceImage=Label(self.rightFirstLevel, image = img1)#.grid(row = 1, column = 1, columnspan = 2, rowspan = 2, ipadx = 5, ipady = 5) 
         self.sceImage.grid(row = 1, column = 1,columnspan = 1, rowspan = 1, ipadx = 4, ipady = 4)
         self.sceImage.photo_ref =img1
@@ -36,11 +37,11 @@ class AboutW(Toplevel):
         # midle side
         self.middleOfleftThirdLevel=LabelFrame(self.leftThirdLevel,relief='raised')
         self.middleOfleftThirdLevel.grid(row = 0, column = 1,padx = 50)
-        self.nameOfDevelopers=Label(self.middleOfleftThirdLevel, text = "Aviel Roistacher and Genady Kogan",font=("Aharoni", 12)).grid(row = 0, column = 0)
+        self.nameOfDevelopers=Label(self.middleOfleftThirdLevel, text = "Aviel Roistacher - avirois@gmail.com",font=("Aharoni", 14)).grid(row = 0, column = 0)
+        self.nameOfDevelopers=Label(self.middleOfleftThirdLevel, text = "Genady Kogan - rgkogan@gmail.com",font=("Aharoni", 14)).grid(row = 1, column = 0)
         # right side
         self.rightOfleftThirdLevel=LabelFrame(self.leftThirdLevel,relief='raised')
         self.rightOfleftThirdLevel.grid(row = 0, column = 2,padx = 10)
-        self.date1 = Label (self.rightOfleftThirdLevel, text="Build time: 2020-2021",font=("Aharoni", 12)).grid(row = 0, column = 0)
         
         # third level
         self.leftSecondLevel = LabelFrame(self, relief='flat')
@@ -54,7 +55,7 @@ class AboutW(Toplevel):
         # right side
         self.rightOfleftSecondLevel= LabelFrame(self.leftSecondLevel, relief='raised')
         self.rightOfleftSecondLevel.grid(row = 0, column = 1, sticky = W, padx = 50) 
-        self.nameOfAcademicAdviser=Label(self.rightOfleftSecondLevel, text = "Dr. Irina Rabaev",font=("Aharoni", 12)).grid(row = 0, column = 0)
+        self.nameOfAcademicAdviser=Label(self.rightOfleftSecondLevel, text = "Dr. Irina Rabaev",font=("Aharoni", 14)).grid(row = 0, column = 0)
         
         # fourth level
         self.rightFourthLevel = LabelFrame(self, relief='flat')

@@ -44,6 +44,9 @@ class ImageSelect(Toplevel):
         self.lstWantedFiles = currWantedFiles
         self.lstUnwantedFiles = []
         
+        # Disable resize of the window
+        self.resizable(False, False)
+        
         # Set title for the window
         self.title("Image Select")
         self.minsize(WINDOW_HEIGHT, WINDOW_WIDTH)

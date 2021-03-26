@@ -84,7 +84,11 @@ class Root(Tk):
         super(Root, self).__init__()
         
         # Set title for the window
-        self.title("Bone Segmentation")
+        self.title("Easy Bone Segmentation - SCE")
+        
+        # Set icon for the application
+        icon = PhotoImage(file=PROGRAM_PATH + "/images/icon.png")
+        self.iconphoto(False, icon)
         
         # Set size of the window
         self.minsize(WINDOW_HEIGHT, WINDOW_WIDTH)

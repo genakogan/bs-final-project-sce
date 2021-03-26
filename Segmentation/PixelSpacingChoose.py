@@ -31,6 +31,9 @@ class PixelSpaceChoose(Toplevel):
         
         super(PixelSpaceChoose, self).__init__()
         
+        # Disable resize of the window
+        self.resizable(False, False)
+        
         # Set title for the window
         self.title("Pixel Spacing Select")
         self.minsize(WINDOW_HEIGHT, WINDOW_WIDTH)
