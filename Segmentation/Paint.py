@@ -58,7 +58,7 @@ class PaintApp(QMainWindow):
         self.setWindowIcon(QtGui.QIcon(SAVED_ICON)) 
         
         # setting title 
-        self.setWindowTitle("Image Editor") 
+        self.setWindowTitle("Image Editor - Black color") 
        
         # Set file path
         self.filePath=fileP
@@ -129,7 +129,19 @@ class PaintApp(QMainWindow):
         fileMenu.addAction(saveAction) 
         
         # adding action to the save 
-        saveAction.triggered.connect(self.save) 
+        saveAction.triggered.connect(self.save)
+        
+        # creating save and close action 
+        saveCloseAction = QAction("Save and close", self) 
+              
+        # adding short cut for save and close action 
+        saveCloseAction.setShortcut("Ctrl+W") 
+        
+        # adding save to the file menu 
+        fileMenu.addAction(saveCloseAction) 
+        
+        # adding action to the save and close
+        saveCloseAction.triggered.connect(self.saveAndClose) 
         
         saveAsAction = QAction("Save As", self) 
         # adding short cut for save action 
@@ -182,6 +194,15 @@ class PaintApp(QMainWindow):
         self.redoAction.setDisabled(True)
 
         # creating options for brush sizes 
+        # creating action for selecting pixel of 1px 
+        pix_1 = QAction("1px", self) 
+        
+        # adding this action to the brush size 
+        b_size.addAction(pix_1)
+        
+        # adding method to this 
+        pix_1.triggered.connect(self.Pixel_1) 
+        
         # creating action for selecting pixel of 4px 
         pix_4 = QAction("4px", self) 
         
@@ -265,6 +286,29 @@ class PaintApp(QMainWindow):
             
             # Scale the point according to screen size
             self.lastPoint = scaledPoint
+            
+            # Allow change single pixel
+            painter = QtGui.QPainter(self.imageDraw)
+            painter.setPen(QtGui.QPen(self.brushColor, self.brushSize, QtCore.Qt.SolidLine, QtCore.Qt.RoundCap, QtCore.Qt.RoundJoin))
+            painter.drawPoint(scaledPoint)
+            
+            # End drawing
+            painter.end()
+            
+            # Update the screen
+            self.update()
+            
+        # Check if right button pressed
+        elif event.button() == Qt.RightButton:
+            # Check if current color is black set white
+            if (self.brushColor == Qt.black):
+                self.whiteColor()
+            else:
+                self.blackColor()
+        # Check if middle button pressed
+        elif event.button() == Qt.MiddleButton:
+            # Save and close
+            self.saveAndClose()
         
     def mouseMoveEvent(self, event):
         """
@@ -384,7 +428,45 @@ class PaintApp(QMainWindow):
         else:
             # Raise popup about wrong path
             messagebox.showerror(title="Error", message="Wrong path was selected try again!")
+    
+    # method for "save and close" option from file menu
+    def saveAndClose(self):
+        """
+           Method can save existing files.
+        Existing files can be saved directly 
+        without changing path and name of image.
+        after saving the editor being closed.
         
+        Parameters:
+            self  - the object
+
+        Returns:
+            None.
+
+        """
+        
+        # Create the path with file name to save
+        strPath = self.filePath + "/" + self.name
+        
+        # Create path to backupd directory
+        strBackupPath = self.filePath + BACKUP_DIRECTORY_PATH
+        
+        # Backup previous version of the file
+        boolBackupExists = Path(strBackupPath).exists()
+        
+        # Check if backup directory not exists
+        if (not boolBackupExists):
+            os.mkdir(strBackupPath)
+            
+        # Backup the previous file before saving
+        shutil.copy(strPath, strBackupPath)
+        
+        # Save the file
+        self.saveFileOperation(strPath)
+        
+        # Close the editor when save finished
+        self.close()
+    
     # method for "save" option from file menu
     def save(self):
         """
@@ -585,7 +667,21 @@ class PaintApp(QMainWindow):
         # Update the screen
         self.update()
         
-    # methods for changing pixel sizes 
+    # methods for changing pixel sizes
+    def Pixel_1(self): 
+        """
+            changing pixel sizes in brush. 
+        Size = 1
+        
+        Parameters:
+            self  - the object
+            
+        Returns:
+            None
+
+        """
+        self.brushSize = 1
+        
     def Pixel_4(self): 
         """
             changing pixel sizes in brush. 
@@ -655,7 +751,8 @@ class PaintApp(QMainWindow):
             None
 
         """
-        self.brushColor = Qt.black 
+        self.brushColor = Qt.black
+        self.setWindowTitle("Image Editor - Black color")
   
     def whiteColor(self): 
         """
@@ -670,7 +767,8 @@ class PaintApp(QMainWindow):
 
         """
         
-        self.brushColor = Qt.white 
+        self.brushColor = Qt.white
+        self.setWindowTitle("Image Editor - White color")
     
     def redColor(self): 
         """
@@ -685,5 +783,6 @@ class PaintApp(QMainWindow):
 
         """
         self.brushColor = Qt.red
+        self.setWindowTitle("Image Editor - Red color") 
   
 paintApp = QApplication(sys.argv)

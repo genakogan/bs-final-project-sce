@@ -8,7 +8,7 @@ WINDOW_WIDTH            = 100           # The width of the main window
 INDEX_X                 = 0             # Index of x spacing in the list
 INDEX_Y                 = 1             # Index of y spacing in the list
 INDEX_Z                 = 2             # Index of z spacing in the list
-SPACIMG_RESOLUTION      = 0.0001        # Increment resolution for spacing
+SPACIMG_RESOLUTION      = 0.0000001     # Increment resolution for spacing
 
 # Global
 results = []

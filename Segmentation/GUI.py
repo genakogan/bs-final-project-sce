@@ -19,6 +19,7 @@ try:
     import ImageChoose as ic
     import AboutWindow as aw
     import PixelSpacingChoose as psc
+    import ChooseArea as ca
     import webbrowser
     import gc
     import time
@@ -28,7 +29,7 @@ except ImportError as impError:
     sys.exit()  
 
 # Constant variable definition
-WINDOW_HEIGHT           = 800           # The height of the main window
+WINDOW_HEIGHT           = 930           # The height of the main window
 WINDOW_WIDTH            = 600           # The width of the main window
 DEFAULT_THRESHOLD       = 0.6           # Default threshold value
 DEFAULT_MIN_SIZE        = 1000          # Default min size of object for segmentation
@@ -37,8 +38,8 @@ DEFAULT_MAX_SIZE        = 50000         # Default max size of object for segment
 THRESHOLD_RESOLUTION    = 0.0005        # Increment resolution for threshold
 ZOOM_IN_SCALE           = 1.1           # Zoom in scale size
 ZOOM_OUT_SCALE          = 0.9           # Zoom out scale size
-MIN_DISPLAY_SIZE_WIDTH  = 500           # Minimum size in pixel of displayed image of width
-MIN_DISPLAY_SIZE_HEIGHT = 500           # Minimum size in pixel of displayed image of height
+MIN_DISPLAY_SIZE_WIDTH  = 600           # Minimum size in pixel of displayed image of width
+MIN_DISPLAY_SIZE_HEIGHT = 600           # Minimum size in pixel of displayed image of height
 SEGMENT_FUNC_INDX       = 0             # Index for segmentation function in the list inside dictionary of files
 THRESHOLD_INDX          = 1             # Index for threshold in the list inside dictionary of files
 MIN_SIZE_INDX           = 2             # Index for min size in the list inside dictionary of files
@@ -113,6 +114,12 @@ class Root(Tk):
         
         # List to store the names of tested files
         self.lstTestedFiles = []
+        
+        # Create zoom variables
+        self.zoomWidth, self.zoomHeight = MIN_DISPLAY_SIZE_WIDTH, MIN_DISPLAY_SIZE_HEIGHT
+        
+        # Create location
+        self.moveX, self.moveY = 0, 0
        
     def upperMenu(self):
         """
@@ -186,11 +193,17 @@ class Root(Tk):
         # Add button for reset the default thresholds to program default
         self.editMenu.add_command(label='Reset Default Thresholds', state = DISABLED, command = self.resetDefaultValues)
         
+        # Add button to reset zoom
+        self.editMenu.add_command(label='Reset Zoom', state = DISABLED, command = self.resetZoom)
+        
         # Add separator for the Documentation button
         self.editMenu.add_separator()
         
         # Add button for set thresholds on images below
         self.editMenu.add_command(label='Set Thresholds Below', state = DISABLED, command = self.setBelowThresholds)
+        
+        # Add button for crop all images
+        self.editMenu.add_command(label='Crop Images', state = DISABLED, command = self.cropImages)
         
         # Add separator for the Documentation button
         self.editMenu.add_separator()
@@ -263,7 +276,7 @@ class Root(Tk):
         """
         
         # Creating Listbox of files
-        self.lbFiles = Listbox(self, height=int(WINDOW_HEIGHT / 20))
+        self.lbFiles = Listbox(self, height=int(WINDOW_HEIGHT / 20) + 2)
         
         # Creating the scroll side bar in order to accept 
         # scrolling if lot files exists
@@ -408,11 +421,11 @@ class Root(Tk):
             self.imgCanvas = Canvas(self.frameImage, width = MIN_DISPLAY_SIZE_WIDTH, height = MIN_DISPLAY_SIZE_HEIGHT)
             
             # Place the image canvas in the correct location in the window
-            self.imgCanvas.grid(column = 0, row = 0, padx=120, sticky='n', columnspan=100)
+            self.imgCanvas.grid(column = 0, row = 0, padx=50, sticky='n', columnspan=6)
             
             # Prepare the image with first segmentation
             self.img = self.dictFilesSegment[self.currentFile][SEGMENT_FUNC_INDX]()
-            self.img = self.img.resize((MIN_DISPLAY_SIZE_WIDTH, MIN_DISPLAY_SIZE_HEIGHT), Image.ANTIALIAS)
+            self.img = self.img.resize((self.zoomWidth, self.zoomHeight), Image.ANTIALIAS)
             
             # Put photo as attribute in order to prevent garbage collection
             self.photo = ImageTk.PhotoImage(self.img)
@@ -422,6 +435,11 @@ class Root(Tk):
             
             # Configure scroll area for image
             self.imgCanvas.configure(scrollregion = self.imgCanvas.bbox("all"))
+            
+            # Check if value to move not 0
+            if (self.moveX != 0 and self.moveY != 0):
+                self.imgCanvas.xview_moveto(self.moveX)
+                self.imgCanvas.yview_moveto(self.moveY)
             
             # Define variable to hold boolean value for checkbutton
             bLockParams = self.dictFilesSegment[self.currentFile][CONFIGURED_INDX]
@@ -434,8 +452,8 @@ class Root(Tk):
             varAreaThreshold = IntVar(value = 0)
             
             # Add checkbutton to set image as configured or able to reset
-            self.cbLockParams = Checkbutton(self.frameImage, text = 'Lock params', variable=self.varLockedParams, command=self.lockParams)
-            self.cbLockParams.grid(row = 0, column = 5, sticky = 'WE')
+            self.cbLockParams = Checkbutton(self.frameImage, text = 'Lock\nparams', variable=self.varLockedParams, command=self.lockParams)
+            self.cbLockParams.grid(row = 0, column = 0, sticky = 'E')
             
             # Check if need to select because image locked
             if (bLockParams):
@@ -443,46 +461,56 @@ class Root(Tk):
             # Need deselect because the image is not locked
             else:
                 self.cbLockParams.deselect()
+                
+            # Create frame for sliders
+            self.frameSliders = Frame(self.frameImage)
+            self.frameSliders.grid(column = 0, row = 1, sticky='nsew')
+            
+            # Empty padding line
+            Label(self.frameSliders, text="").grid(row=0, column=0, padx=50, sticky=W)
             
             # Add sliders for segmentation options:
-            self.thresholdLbl = Label(self.frameImage, text="Threshold:").grid(row=1,padx=20, sticky=W)
-            self.threshold = Scale(self.frameImage, showvalue=0, from_=0, to=1, resolution = THRESHOLD_RESOLUTION, orient=HORIZONTAL, variable=varThreshold)
+            self.thresholdLbl = Label(self.frameSliders, text="Threshold:").grid(row=1, column=1, padx=20, sticky=W)
+            self.threshold = Scale(self.frameSliders, showvalue=0, from_=0, to=1, resolution = THRESHOLD_RESOLUTION, orient=HORIZONTAL, variable=varThreshold)
             self.threshold.set(self.dictFilesSegment[self.currentFile][THRESHOLD_INDX])
-            self.threshold.grid(row = 1, column = 1, sticky='w')
+            self.threshold.grid(row = 1, column = 2, sticky='w')
             
             # Add textbox for threshold
-            self.tbThreshold = Spinbox(self.frameImage, textvariable=varThreshold, wrap=True, width=10, from_=0, to=1, increment = THRESHOLD_RESOLUTION)
-            self.tbThreshold.grid(row = 1, column = 2,rowspan=1, sticky='WE')
+            self.tbThreshold = Spinbox(self.frameSliders, textvariable=varThreshold, wrap=True, width=10, from_=0, to=1, increment = THRESHOLD_RESOLUTION)
+            self.tbThreshold.grid(row = 1, column = 3,rowspan=1, sticky='WE')
             
             # Add sliders for min size threshold:
-            self.minSizeLbl = Label(self.frameImage, text="Min Size:").grid(row=2,padx=20, sticky=W)
-            self.minSizeVal = Scale(self.frameImage, showvalue=0, from_=0, to=10000, orient=HORIZONTAL, variable=varMinSize)
+            self.minSizeLbl = Label(self.frameSliders, text="Min Size:").grid(row=2, column=1, padx=20, sticky=W)
+            self.minSizeVal = Scale(self.frameSliders, showvalue=0, from_=0, to=10000, orient=HORIZONTAL, variable=varMinSize)
             self.minSizeVal.set(self.dictFilesSegment[self.currentFile][MIN_SIZE_INDX])
-            self.minSizeVal.grid(row = 2, column = 1, sticky='w')
+            self.minSizeVal.grid(row = 2, column = 2, sticky='w')
             
             # Add textbox for min size
-            self.tbMinSize = Spinbox(self.frameImage, textvariable=varMinSize, wrap=True, width=10, from_=0, to=10000)
-            self.tbMinSize.grid(row = 2, column = 2,rowspan=1, sticky='WE')
+            self.tbMinSize = Spinbox(self.frameSliders, textvariable=varMinSize, wrap=True, width=10, from_=0, to=10000)
+            self.tbMinSize.grid(row = 2, column = 3,rowspan=1, sticky='WE')
             
             # Add sliders for max size threshold:
-            self.maxSizeLbl = Label(self.frameImage, text="Max Size:").grid(row=3,padx=20, sticky=W)
-            self.maxSizeVal = Scale(self.frameImage, showvalue=0, from_=0, to=100000, orient=HORIZONTAL, variable=varMaxSize)
+            self.maxSizeLbl = Label(self.frameSliders, text="Max Size:").grid(row=3, column=1, padx=20, sticky=W)
+            self.maxSizeVal = Scale(self.frameSliders, showvalue=0, from_=0, to=100000, orient=HORIZONTAL, variable=varMaxSize)
             self.maxSizeVal.set(self.dictFilesSegment[self.currentFile][MAX_SIZE_INDX])
-            self.maxSizeVal.grid(row = 3, column = 1, sticky='w')
+            self.maxSizeVal.grid(row = 3, column = 2, sticky='w')
             
             # Add textbox for max size
-            self.tbMaxSize = Spinbox(self.frameImage, textvariable=varMaxSize, wrap=True, width=10, from_=0, to=100000)
-            self.tbMaxSize.grid(row = 3, column = 2,rowspan=1, sticky='WE')
+            self.tbMaxSize = Spinbox(self.frameSliders, textvariable=varMaxSize, wrap=True, width=10, from_=0, to=100000)
+            self.tbMaxSize.grid(row = 3, column = 3,rowspan=1, sticky='WE')
             
             # Add sliders for area threshold:
-            self.areaValLbl = Label(self.frameImage, text="Area Treshold:").grid(row=4, padx=20, sticky=W)
-            self.areaVal = Scale(self.frameImage, showvalue=0, from_=0, to=10000, orient=HORIZONTAL, variable=varAreaThreshold)
+            self.areaValLbl = Label(self.frameSliders, text="Area Treshold:").grid(row=4, column=1, padx=20, sticky=W)
+            self.areaVal = Scale(self.frameSliders, showvalue=0, from_=0, to=10000, orient=HORIZONTAL, variable=varAreaThreshold)
             self.areaVal.set(self.dictFilesSegment[self.currentFile][AREA_SIZE_INDX])
-            self.areaVal.grid(row = 4, column = 1, sticky='w')
+            self.areaVal.grid(row = 4, column = 2, sticky='w')
             
             # Add textbox for area threshold
-            self.tbAreaThreshold = Spinbox(self.frameImage, textvariable=varAreaThreshold, wrap=True, width=10, from_=0, to=10000)
-            self.tbAreaThreshold.grid(row = 4, column = 2,rowspan=1, sticky='WE')
+            self.tbAreaThreshold = Spinbox(self.frameSliders, textvariable=varAreaThreshold, wrap=True, width=10, from_=0, to=10000)
+            self.tbAreaThreshold.grid(row = 4, column = 3, rowspan=1, sticky='WE')
+            
+            # Empty padding line
+            Label(self.frameSliders, text="").grid(row=5, column=0, padx=50, sticky=W)
             
             # Get number of rows in the image frame
             nFrameRows = self.frameImage.grid_size()[1]
@@ -492,8 +520,12 @@ class Root(Tk):
             
             # -------- Buttons first line --------
             
+            # Create frame for buttons
+            self.frameButtons = Frame(self.frameImage)
+            self.frameButtons.grid(column = 0, row = 2, sticky='nsew')
+            
             # Add button for previous image
-            self.btnPrevImage = ttk.Button(self.frameImage, text="< Prev", command=self.prevImage)
+            self.btnPrevImage = ttk.Button(self.frameButtons, text="< Prev", command=self.prevImage)
             self.btnPrevImage.config(width=20)
             self.btnPrevImage.grid(column = 0, row = nButtonsRow, sticky='sw')
             
@@ -503,27 +535,27 @@ class Root(Tk):
                 self.btnPrevImage.config(state=DISABLED)
             
             # Add button for segmentation Preview
-            self.btnSegmentPreview = ttk.Button(self.frameImage, text="Preview", command=self.previewSegmentation)
+            self.btnSegmentPreview = ttk.Button(self.frameButtons, text="Preview", command=self.previewSegmentation)
             self.btnSegmentPreview.config(width=20)
             self.btnSegmentPreview.grid(column = 1, row = nButtonsRow, sticky='sw')
             
             # Add button for clear segmentation values
-            self.btnResetToDefault = ttk.Button(self.frameImage, text="Reset Thresholds", command=self.resetThresholds)
+            self.btnResetToDefault = ttk.Button(self.frameButtons, text="Reset Thresholds", command=self.resetThresholds)
             self.btnResetToDefault.config(width=20)
             self.btnResetToDefault.grid(column = 2, row = nButtonsRow, sticky='sw')
             
             # Add button for image segmentation save
-            self.btnSingleSegment = ttk.Button(self.frameImage, text="Save", command=self.singleImageSegmentation)
+            self.btnSingleSegment = ttk.Button(self.frameButtons, text="Save", command=self.singleImageSegmentation)
             self.btnSingleSegment.config(width=20)
             self.btnSingleSegment.grid(column = 3, row = nButtonsRow, sticky='sw')
             
             # Add button for image edit
-            self.btnImgEdit = ttk.Button(self.frameImage, text="Edit", command=self.editImage)
+            self.btnImgEdit = ttk.Button(self.frameButtons, text="Edit", command=self.editImage)
             self.btnImgEdit.config(width=20)
             self.btnImgEdit.grid(column = 4, row = nButtonsRow, sticky='sw')
             
             # Add button for next image
-            self.btnNextImage = ttk.Button(self.frameImage, text="Next >", command=self.nextImage)
+            self.btnNextImage = ttk.Button(self.frameButtons, text="Next >", command=self.nextImage)
             self.btnNextImage.config(width=20)
             self.btnNextImage.grid(column = 5, row = nButtonsRow, sticky='sw')
             
@@ -545,6 +577,8 @@ class Root(Tk):
             self.editMenu.entryconfig("Set Default Thresholds", state=NORMAL)
             self.editMenu.entryconfig("Reset Default Thresholds", state=NORMAL)
             self.editMenu.entryconfig("Remove Image", state=NORMAL)
+            self.editMenu.entryconfig("Crop Images", state=NORMAL)
+            self.editMenu.entryconfig("Reset Zoom", state=NORMAL)
             self.editMenu.entryconfig("Set Thresholds Below", state=NORMAL)
             
             # Set image open flag as true
@@ -573,6 +607,9 @@ class Root(Tk):
             # Resize the image bythe zoom in scale value
             self.img = self.img.resize((int(width * ZOOM_IN_SCALE), int(height * ZOOM_IN_SCALE)), Image.ANTIALIAS)
             
+            # Save zoom values
+            self.zoomWidth, self.zoomHeight = int(width * ZOOM_IN_SCALE), int(height * ZOOM_IN_SCALE)
+            
         # If moved the mouse wheel backward
         elif (event.delta < 0):
             # Check if the size after resize will be less than minimum image size
@@ -581,6 +618,16 @@ class Root(Tk):
     
                 # Resize the image bythe zoom out scale value
                 self.img = self.img.resize((int(width * ZOOM_OUT_SCALE), int(height * ZOOM_OUT_SCALE)), Image.ANTIALIAS)
+                
+                # Save zoom values
+                self.zoomWidth, self.zoomHeight = int(width * ZOOM_OUT_SCALE), int(height * ZOOM_OUT_SCALE)
+            # Set default image size
+            else:
+                 # Resize the image bythe zoom out scale value
+                self.img = self.img.resize((int(MIN_DISPLAY_SIZE_WIDTH), int(MIN_DISPLAY_SIZE_HEIGHT)), Image.ANTIALIAS)
+                
+                # Save zoom values
+                self.zoomWidth, self.zoomHeight = int(MIN_DISPLAY_SIZE_WIDTH), int(MIN_DISPLAY_SIZE_HEIGHT)
         
         # Put photo as attribute in order to prevent garbage collection
         self.photo = ImageTk.PhotoImage(self.img)
@@ -593,6 +640,9 @@ class Root(Tk):
         
         # Configure canvas to be scrollabale
         self.imgCanvas.configure(scrollregion = self.imgCanvas.bbox("all"))
+        
+        # Save location
+        self.moveX, self.moveY = self.imgCanvas.xview()[0], self.imgCanvas.yview()[0]
 
     def move_start(self, event):
         """
@@ -621,6 +671,9 @@ class Root(Tk):
         """
         
         self.imgCanvas.scan_dragto(event.x, event.y, gain=1)
+        
+        # Save location
+        self.moveX, self.moveY = self.imgCanvas.xview()[0], self.imgCanvas.yview()[0]
     
     def previewSegmentation(self):
         """
@@ -914,10 +967,18 @@ class Root(Tk):
             self.editMenu.entryconfig("Set Default Thresholds", state=DISABLED)
             self.editMenu.entryconfig("Reset Default Thresholds", state=DISABLED)
             self.editMenu.entryconfig("Remove Image", state=DISABLED)
+            self.editMenu.entryconfig("Crop Images", state=DISABLED)
+            self.editMenu.entryconfig("Reset Zoom", state=DISABLED)
             self.editMenu.entryconfig("Set Thresholds Below", state=DISABLED)
             
         # Change image already opend to not opend image
         self.imgAlreadyOpen = IMG_NOT_OPEN_FLAG
+        
+        # Clean zoom values
+        self.zoomWidth, self.zoomHeight = MIN_DISPLAY_SIZE_WIDTH, MIN_DISPLAY_SIZE_HEIGHT
+        
+        # Clean location
+        self.moveX, self.moveY = 0, 0
     
     def performSegmentation(self):
         """
@@ -1545,6 +1606,63 @@ class Root(Tk):
         
         # Set the result list to segmentation algorithm
         seg.pixel_to_mm_val_configured = psc.results
+        
+    def cropImages(self):
+        """
+        The function opens new screen that allows user to crop images according to area.
+        
+        Parameters:
+            self - the object
+        
+        Return:
+            None
+        """
+        
+        # Make the main screen invisible
+        self.withdraw()
+        
+        # Open the image selection screen according to current image and selected path
+        ChooseArea = ca.ChooseArea(self.path, self.currentFile)
+        
+        # Wait till the image crop screen being destroyed
+        self.wait_window(ChooseArea)
+        
+        # Return the main screen be visible
+        self.deiconify()
+    
+    def resetZoom(self):
+        """
+        The function resets the zoom values.
+        
+        Parameters:
+            self - the object
+        
+        Return:
+            None
+        """
+        # Clean zoom values
+        self.zoomWidth, self.zoomHeight = MIN_DISPLAY_SIZE_WIDTH, MIN_DISPLAY_SIZE_HEIGHT
+        
+        # Clean location
+        self.moveX, self.moveY = 0, 0
+        
+        # Reset the image zoom
+        self.imgCanvas.xview_moveto(self.moveX)
+        self.imgCanvas.yview_moveto(self.moveY)
+        self.img = self.img.resize((self.zoomWidth, self.zoomHeight), Image.ANTIALIAS)
+        
+        # Put photo as attribute in order to prevent garbage collection
+        self.photo = ImageTk.PhotoImage(self.img)
+        
+        # Clear canvas before zoom
+        self.imgCanvas.delete("all")
+        
+        # put image on canvas pic's upper left corner (NW) on the canvas
+        self.imgCanvas.create_image((0,0), image=self.photo, anchor=NW)
+        
+        # Configure canvas to be scrollabale
+        self.imgCanvas.configure(scrollregion = self.imgCanvas.bbox("all"))
+        
         
 # Check if we are running the module from the main scope
 if __name__ == "__main__":
