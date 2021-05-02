@@ -28,8 +28,12 @@ class PixelSpaceChoose(Toplevel):
         Return:
             None
         """
-        
         super(PixelSpaceChoose, self).__init__()
+        
+        global results
+        
+        # Reset results list
+        results = []
         
         # Disable resize of the window
         self.resizable(False, False)
@@ -53,29 +57,29 @@ class PixelSpaceChoose(Toplevel):
         
         # Add sliders for X spacing options:
         self.xSpacingLbl = Label(self.slidersFrame, text="X spacing:").grid(row=0,padx=20, sticky=W)
-        self.xSpacing = Scale(self.slidersFrame, showvalue=0, from_=0, to=1, resolution = SPACIMG_RESOLUTION, orient=HORIZONTAL, variable=varX)
+        self.xSpacing = Scale(self.slidersFrame, showvalue=0, from_=0, to=3, resolution = SPACIMG_RESOLUTION, orient=HORIZONTAL, variable=varX)
         self.xSpacing.grid(row = 0, column = 1, sticky='w')
         
         # Add textbox for X spinbox
-        self.tbXSpacing = Spinbox(self.slidersFrame, textvariable=varX, wrap=True, width=10, from_=0, to=1, increment = SPACIMG_RESOLUTION)
+        self.tbXSpacing = Spinbox(self.slidersFrame, textvariable=varX, wrap=True, width=10, from_=0, to=3, increment = SPACIMG_RESOLUTION)
         self.tbXSpacing.grid(row = 0, column = 2,rowspan=1, sticky='WE')
         
         # Add sliders for Y spacing options:
         self.ySpacingLbl = Label(self.slidersFrame, text="Y spacing:").grid(row=1,padx=20, sticky=W)
-        self.ySpacing = Scale(self.slidersFrame, showvalue=0, from_=0, to=1, resolution = SPACIMG_RESOLUTION, orient=HORIZONTAL, variable=varY)
+        self.ySpacing = Scale(self.slidersFrame, showvalue=0, from_=0, to=3, resolution = SPACIMG_RESOLUTION, orient=HORIZONTAL, variable=varY)
         self.ySpacing.grid(row = 1, column = 1, sticky='w')
         
         # Add textbox for Y spinbox
-        self.tbYSpacing = Spinbox(self.slidersFrame, textvariable=varY, wrap=True, width=10, from_=0, to=1, increment = SPACIMG_RESOLUTION)
+        self.tbYSpacing = Spinbox(self.slidersFrame, textvariable=varY, wrap=True, width=10, from_=0, to=3, increment = SPACIMG_RESOLUTION)
         self.tbYSpacing.grid(row = 1, column = 2,rowspan=1, sticky='WE')
         
         # Add sliders for Z spacing options:
         self.zSpacingLbl = Label(self.slidersFrame, text="Z spacing:").grid(row=2,padx=20, sticky=W)
-        self.zSpacing = Scale(self.slidersFrame, showvalue=0, from_=0, to=1, resolution = SPACIMG_RESOLUTION, orient=HORIZONTAL, variable=varZ)
+        self.zSpacing = Scale(self.slidersFrame, showvalue=0, from_=0, to=5, resolution = SPACIMG_RESOLUTION, orient=HORIZONTAL, variable=varZ)
         self.zSpacing.grid(row = 2, column = 1, sticky='w')
         
         # Add textbox for Y spinbox
-        self.tbZSpacing = Spinbox(self.slidersFrame, textvariable=varZ, wrap=True, width=10, from_=0, to=1, increment = SPACIMG_RESOLUTION)
+        self.tbZSpacing = Spinbox(self.slidersFrame, textvariable=varZ, wrap=True, width=10, from_=0, to=5, increment = SPACIMG_RESOLUTION)
         self.tbZSpacing.grid(row = 2, column = 2,rowspan=1, sticky='WE')
         
         # Add button for save
@@ -102,8 +106,3 @@ class PixelSpaceChoose(Toplevel):
         
         # Close the menu
         self.destroy()
-        
-        
-# Run the main GUI
-#root = PixelSpaceChoose()
-#root.mainloop()

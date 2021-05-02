@@ -7,10 +7,12 @@ from os import listdir
 from os.path import isfile, join
 import os
 from pathlib import Path
+from shutil import copytree
 
 # Constant Definition
 ACCEPTED_EXTENSIONS     = ('jpg', 'jpeg', 'tif', 'tiff', 'png')     # Accepted file extensions
-CROP_DIRECTORY_PATH       = '\\Cropped_Images'
+CROP_DIRECTORY_PATH     = '\\Cropped_Images'                        # Cropped images path
+HU_DIRECTORY_PATH       = '\\HU'                                    # HU files path
 
 # Global Variables
 topx, topy, botx, boty = 0, 0, 0, 0
@@ -193,6 +195,19 @@ class ChooseArea(Toplevel):
                 
                 # Save the cropped image in the directory
                 cv2.imwrite(strCropPath + "\\" + img, backtorgb)
+        
+        # Check if HU directory exists if yes the files converted from dicom therefore copy the dir
+        boolHUDirExists = Path(path + HU_DIRECTORY_PATH).exists()
+        
+        # Check if directory exists
+        if (boolHUDirExists):
+            # Check if HU directory exists in crop dir
+            boolCropHUDirExists = Path(strCropPath + HU_DIRECTORY_PATH).exists()
+            
+            # Check if not exists
+            if (not boolCropHUDirExists):
+                # Copy the HU dir to cropped images path
+                copytree(path + HU_DIRECTORY_PATH, strCropPath + HU_DIRECTORY_PATH)
         
         # Show message about successful crop
         messagebox.showinfo(title="Crop completed!", message="Crop of all images completed!")

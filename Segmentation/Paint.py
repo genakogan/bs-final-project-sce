@@ -24,6 +24,7 @@ savedImageFlag      = False
 savedAsImageFlag    = False
 savedAsPath         = SAVED_SAME_PATH_AND_NAME
 savedAsFileName     = ""
+defaultPaintSize    = 2
 
 # window class 
 class PaintApp(QMainWindow):
@@ -92,7 +93,7 @@ class PaintApp(QMainWindow):
       
         # variables 
         # default brush size 
-        self.brushSize = 2
+        self.brushSize = defaultPaintSize
         
         # drawing flag 
         self.drawing = False
@@ -680,7 +681,13 @@ class PaintApp(QMainWindow):
             None
 
         """
+        global defaultPaintSize
+        
+        # Set the brush size
         self.brushSize = 1
+        
+        # Save the brush size as default
+        defaultPaintSize = self.brushSize
         
     def Pixel_4(self): 
         """
@@ -694,7 +701,13 @@ class PaintApp(QMainWindow):
             None
 
         """
+        global defaultPaintSize
+        
+        # Set the brush size
         self.brushSize = 4
+        
+        # Save the brush size as default
+        defaultPaintSize = self.brushSize
   
     def Pixel_7(self): 
         """
@@ -708,7 +721,13 @@ class PaintApp(QMainWindow):
             None
 
         """
+        global defaultPaintSize
+        
+        # Set the brush size
         self.brushSize = 7
+        
+        # Save the brush size as default
+        defaultPaintSize = self.brushSize
   
     def Pixel_9(self): 
         """
@@ -722,7 +741,13 @@ class PaintApp(QMainWindow):
             None
 
         """
+        global defaultPaintSize
+        
+        # Set the brush size
         self.brushSize = 9
+        
+        # Save the brush size as default
+        defaultPaintSize = self.brushSize
   
     def Pixel_12(self): 
         """
@@ -736,7 +761,13 @@ class PaintApp(QMainWindow):
             None
 
         """
+        global defaultPaintSize
+        
+        # Set the brush size
         self.brushSize = 12
+        
+        # Save the brush size as default
+        defaultPaintSize = self.brushSize
   
     # methods for changing brush color 
     def blackColor(self): 

@@ -926,8 +926,7 @@ class Root(Tk):
         
         Return:
             None
-        """
-
+        """        
         # Browse for directory of images
         self.path = filedialog.askdirectory()
         
@@ -1604,8 +1603,10 @@ class Root(Tk):
         # Return the main screen be visible
         self.deiconify()
         
-        # Set the result list to segmentation algorithm
-        seg.pixel_to_mm_val_configured = psc.results
+        # Check if saved results
+        if (psc.results):
+            # Set the result list to segmentation algorithm
+            seg.pixel_to_mm_val_configured = psc.results
         
     def cropImages(self):
         """
