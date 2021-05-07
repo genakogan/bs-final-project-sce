@@ -264,11 +264,3 @@ class ImageSelect(Toplevel):
             
             # put image on canvas pic's upper left corner (NW) on the canvas
             self.imgCanvas.create_image((0,0), image=self.imgOnCanvas, anchor=NW)
-        
-        
-            
-# Run the main GUI
-#root = ImageSelect("C:\\Users\\Aviel-PC\\לימודים\\Project\\CT images\\spineimage\\SpineCTAnonExample\\SpineCTAnonExample\\test5")
-#root.mainloop()
-
-#print(results)

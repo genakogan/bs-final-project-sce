@@ -175,8 +175,6 @@ def imageConfigSegment(path, threshold = 0.6, min_size = 1000, area_threshold = 
         """
         # Copy the image to new numpy array of pixels
         npBool = np.copy(npMask)
-        #npBool = np.full((npNewMask.shape[0], npNewMask.shape[1]), False)
-        #print(npBool)
 
         # Initialize the indexes for loop
         nIndxRow = 0

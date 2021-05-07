@@ -214,7 +214,3 @@ class ChooseArea(Toplevel):
         
         # Close the window
         self.destroy()
-
-# Run the main GUI
-#root = ChooseArea("F:\\Project Test\\test12","AgA0.png")
-#root.mainloop()

@@ -42,7 +42,6 @@ class Note(QMainWindow):
         self.editor = te.TE()
         
         # Setup the QTextEdit editor configuration
-        #self.editor.setAutoFormatting(QTextEdit.AutoAll)
         self.editor.selectionChanged.connect(self.updateFormat)
         
         # Initialize default font size.
@@ -62,7 +61,7 @@ class Note(QMainWindow):
         # Create central window
         container = QWidget()
         
-        # SetLayout() function applies a layout to a widget
+        # function applies a layout to a widget
         container.setLayout(layout)
         
         #Sets the given widget to be the main window's central widget.
@@ -520,10 +519,3 @@ def splitext(p):
     return os.path.splitext(p)[1].lower()
 
 noteApp = QApplication(sys.argv)
-#if __name__ == '__main__':
-
-    #app = QApplication(sys.argv)
-    #app.setApplicationName("Notebook")
-
-    #window = Note()
-    #app.exec_()
