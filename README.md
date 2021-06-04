@@ -1,5 +1,15 @@
 # Final-Project-SCE
 
+## Use program
+
+Step 1) Install Python 3.8
+
+Step 2) Download Segmentation folder
+
+Step 3) Open command prompt from Segmentation directory and execute pip install -r requirements.txt
+
+Step 4) Execute GUI.py file
+
 ## Connection python spyder with Final-Project-SCE repository
 
 Step 1) Download and Install Git
